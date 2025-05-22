@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useContext } from "react"
+import { useState, useEffect, useContext, useRef } from "react"
 import { useNavigate } from "react-router-dom"
 import { Button } from "../components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../components/ui/card"
@@ -12,9 +12,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../components/ui/dialog"
+import { Progress } from "../components/ui/progress"
 import ThemeToggle from "../components/ThemeToggle"
 import { EmojiContext } from "../contexts/EmojiContext"
-import { AlertCircle } from "lucide-react"
+import { AlertCircle, Clock, Zap } from "lucide-react"
+
+// Constants
+const QUICK_MOVE_TIME = 10 // seconds
+const QUICK_MOVE_BONUS = 5 // seconds
 
 export default function GameBoardPage() {
   const navigate = useNavigate()
@@ -29,15 +34,152 @@ export default function GameBoardPage() {
   const [winningLine, setWinningLine] = useState([])
   const [showHelp, setShowHelp] = useState(false)
 
+  // Timer related state
+  const [player1Time, setPlayer1Time] = useState(null)
+  const [player2Time, setPlayer2Time] = useState(null)
+  const [isTimerRunning, setIsTimerRunning] = useState(false)
+  const [timeIsUp, setTimeIsUp] = useState(false)
+  const timerRef = useRef(null)
+
+  // Turn timer for quick move bonus
+  const [turnTimeRemaining, setTurnTimeRemaining] = useState(QUICK_MOVE_TIME)
+  const [showPlayer1Bonus, setShowPlayer1Bonus] = useState(false)
+  const [showPlayer2Bonus, setShowPlayer2Bonus] = useState(false)
+  const turnTimerRef = useRef(null)
+  const turnStartTimeRef = useRef(null)
+
   useEffect(() => {
+    // Debug log
+    console.log("GameBoardPage mounted, gameSettings:", gameSettings)
+
     if (!gameSettings) {
+      console.log("No game settings found, redirecting to setup")
       navigate("/setup")
-    } else {
-      setCurrentEmoji(getRandomEmoji(1))
+      return
+    }
+
+    // Initialize the game
+    console.log("Initializing game with settings:", gameSettings)
+    setCurrentEmoji(getRandomEmoji(1))
+
+    // Initialize timers if game has a duration
+    if (gameSettings.gameDuration) {
+      console.log("Setting up timers with duration:", gameSettings.gameDuration)
+      setPlayer1Time(gameSettings.player1.timeRemaining)
+      setPlayer2Time(gameSettings.player2.timeRemaining)
+      setIsTimerRunning(true)
+    }
+
+    // Initialize turn timer
+    if (gameSettings.enableQuickMoveBonus) {
+      console.log("Setting up quick move bonus timer")
+      turnStartTimeRef.current = Date.now()
+      setTurnTimeRemaining(QUICK_MOVE_TIME)
+      startTurnTimer()
     }
   }, [gameSettings, navigate])
 
+  // Main game timer effect
+  useEffect(() => {
+    if (!isTimerRunning || (player1Time === null && player2Time === null)) return
+
+    timerRef.current = setInterval(() => {
+      if (currentPlayer === 1) {
+        setPlayer1Time((prev) => {
+          if (prev <= 1) {
+            clearInterval(timerRef.current)
+            setIsTimerRunning(false)
+            setTimeIsUp(true)
+            setWinner(2) // Player 2 wins if Player 1 runs out of time
+            return 0
+          }
+          return prev - 1
+        })
+      } else {
+        setPlayer2Time((prev) => {
+          if (prev <= 1) {
+            clearInterval(timerRef.current)
+            setIsTimerRunning(false)
+            setTimeIsUp(true)
+            setWinner(1) // Player 1 wins if Player 2 runs out of time
+            return 0
+          }
+          return prev - 1
+        })
+      }
+    }, 1000)
+
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current)
+    }
+  }, [isTimerRunning, currentPlayer, player1Time, player2Time])
+
+  // Turn timer effect for quick move bonus
+  useEffect(() => {
+    if (!gameSettings?.enableQuickMoveBonus || !isTimerRunning || winner || timeIsUp) return
+
+    // Start turn timer when component mounts or when player changes
+    if (gameSettings?.enableQuickMoveBonus && isTimerRunning) {
+      startTurnTimer()
+    }
+
+    return () => {
+      if (turnTimerRef.current) clearInterval(turnTimerRef.current)
+    }
+  }, [gameSettings, isTimerRunning, winner, timeIsUp, currentPlayer])
+
+  // Cleanup animation effect for player 1 bonus
+  useEffect(() => {
+    if (showPlayer1Bonus) {
+      const timer = setTimeout(() => {
+        setShowPlayer1Bonus(false)
+      }, 1500)
+      return () => clearTimeout(timer)
+    }
+  }, [showPlayer1Bonus])
+
+  // Cleanup animation effect for player 2 bonus
+  useEffect(() => {
+    if (showPlayer2Bonus) {
+      const timer = setTimeout(() => {
+        setShowPlayer2Bonus(false)
+      }, 1500)
+      return () => clearTimeout(timer)
+    }
+  }, [showPlayer2Bonus])
+
   if (!gameSettings) return null
+
+  function startTurnTimer() {
+    if (turnTimerRef.current) {
+      clearInterval(turnTimerRef.current)
+    }
+
+    setTurnTimeRemaining(QUICK_MOVE_TIME)
+    turnStartTimeRef.current = Date.now()
+
+    turnTimerRef.current = setInterval(() => {
+      if (!turnStartTimeRef.current) return
+
+      const elapsedTime = Math.floor((Date.now() - turnStartTimeRef.current) / 1000)
+      const remaining = Math.max(0, QUICK_MOVE_TIME - elapsedTime)
+
+      setTurnTimeRemaining(remaining)
+
+      if (remaining <= 0) {
+        clearInterval(turnTimerRef.current)
+      }
+    }, 1000)
+  }
+
+  function checkForQuickMoveBonus() {
+    if (!gameSettings?.enableQuickMoveBonus || !isTimerRunning) return false
+
+    if (!turnStartTimeRef.current) return false
+
+    const moveTime = Math.floor((Date.now() - turnStartTimeRef.current) / 1000)
+    return moveTime <= QUICK_MOVE_TIME
+  }
 
   function getRandomEmoji(playerNum) {
     const player = playerNum === 1 ? gameSettings.player1 : gameSettings.player2
@@ -46,7 +188,21 @@ export default function GameBoardPage() {
   }
 
   function handleCellClick(index) {
-    if (winner || board[index] !== null) return
+    if (winner || timeIsUp || board[index] !== null) return
+
+    // Check for quick move bonus
+    const earnedBonus = checkForQuickMoveBonus()
+
+    // Add bonus time if earned
+    if (earnedBonus && gameSettings.enableQuickMoveBonus) {
+      if (currentPlayer === 1 && player1Time !== null) {
+        setPlayer1Time((prev) => prev + QUICK_MOVE_BONUS)
+        setShowPlayer1Bonus(true)
+      } else if (currentPlayer === 2 && player2Time !== null) {
+        setPlayer2Time((prev) => prev + QUICK_MOVE_BONUS)
+        setShowPlayer2Bonus(true)
+      }
+    }
 
     // Create a new board
     const newBoard = [...board]
@@ -97,6 +253,8 @@ export default function GameBoardPage() {
     if (result) {
       setWinner(result.winner)
       setWinningLine(result.line)
+      setIsTimerRunning(false)
+      if (turnTimerRef.current) clearInterval(turnTimerRef.current)
       return
     }
 
@@ -105,8 +263,13 @@ export default function GameBoardPage() {
     setCurrentPlayer(nextPlayer)
     setCurrentEmoji(getRandomEmoji(nextPlayer))
 
+    // Reset turn timer for next player
+    if (gameSettings.enableQuickMoveBonus && isTimerRunning) {
+      startTurnTimer()
+    }
+
     // Computer move
-    if (nextPlayer === 2 && gameSettings.playWithComputer && !result) {
+    if (nextPlayer === 2 && gameSettings.playWithComputer && !result && !timeIsUp) {
       setTimeout(() => {
         makeComputerMove(newBoard)
       }, 800)
@@ -114,6 +277,9 @@ export default function GameBoardPage() {
   }
 
   function makeComputerMove(currentBoard) {
+    // Don't make a move if time is up
+    if (timeIsUp) return
+
     // Create a new board copy to work with
     const newBoard = [...currentBoard]
 
@@ -169,12 +335,19 @@ export default function GameBoardPage() {
     if (result) {
       setWinner(result.winner)
       setWinningLine(result.line)
+      setIsTimerRunning(false)
+      if (turnTimerRef.current) clearInterval(turnTimerRef.current)
       return
     }
 
     // Switch back to player 1
     setCurrentPlayer(1)
     setCurrentEmoji(getRandomEmoji(1))
+
+    // Reset turn timer for player 1
+    if (gameSettings.enableQuickMoveBonus && isTimerRunning) {
+      startTurnTimer()
+    }
   }
 
   function checkWinner(board) {
@@ -216,10 +389,48 @@ export default function GameBoardPage() {
     setCurrentEmoji(getRandomEmoji(1))
     setWinner(null)
     setWinningLine([])
+    setTimeIsUp(false)
+    setShowPlayer1Bonus(false)
+    setShowPlayer2Bonus(false)
+
+    // Reset timers if game has a duration
+    if (gameSettings.gameDuration) {
+      setPlayer1Time(gameSettings.gameDuration * 60)
+      setPlayer2Time(gameSettings.gameDuration * 60)
+      setIsTimerRunning(true)
+
+      // Reset turn timer
+      if (gameSettings.enableQuickMoveBonus) {
+        startTurnTimer()
+      }
+    }
   }
 
   function isWinningCell(index) {
     return winningLine.includes(index)
+  }
+
+  function formatTime(seconds) {
+    if (seconds === null) return "--:--"
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins}:${secs < 10 ? "0" : ""}${secs}`
+  }
+
+  function getTimerColor(time, isActive) {
+    if (time === null) return ""
+    if (time < 10) return "text-red-500 dark:text-red-400 font-bold"
+    if (time < 30) return "text-amber-500 dark:text-amber-400"
+    return isActive ? "text-blue-500 dark:text-blue-400 font-medium" : ""
+  }
+
+  function getProgressValue(time) {
+    if (!gameSettings.gameDuration || time === null) return 100
+    return (time / (gameSettings.gameDuration * 60)) * 100
+  }
+
+  function getTurnProgressValue() {
+    return (turnTimeRemaining / QUICK_MOVE_TIME) * 100
   }
 
   return (
@@ -252,6 +463,20 @@ export default function GameBoardPage() {
                   <p>
                     <strong>Winning:</strong> Form a line of 3 of your emojis horizontally, vertically, or diagonally.
                   </p>
+                  {gameSettings.gameDuration && (
+                    <>
+                      <p>
+                        <strong>Time Limit:</strong> Each player has {gameSettings.gameDuration} minutes. If a player
+                        runs out of time, they lose.
+                      </p>
+                      {gameSettings.enableQuickMoveBonus && (
+                        <p>
+                          <strong>Quick Move Bonus:</strong> Make a move within 10 seconds to earn +5 seconds of game
+                          time.
+                        </p>
+                      )}
+                    </>
+                  )}
                 </div>
               </DialogDescription>
             </DialogHeader>
@@ -263,14 +488,76 @@ export default function GameBoardPage() {
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-2xl font-bold text-center">Emoji Tic Tac Toe</CardTitle>
-          {!winner ? (
+
+          {/* Timer display */}
+          {(player1Time !== null || player2Time !== null) && (
+            <div className="flex justify-between items-center mt-2 mb-1">
+              {/* Player 1 Timer */}
+              <div
+                className={`flex flex-col items-center ${currentPlayer === 1 ? "scale-110" : "opacity-80"} transition-all duration-300`}
+              >
+                <div className="flex items-center">
+                  <Clock className={`h-4 w-4 mr-1 ${currentPlayer === 1 ? "text-blue-500" : ""}`} />
+                  <span className={`text-sm font-medium ${getTimerColor(player1Time, currentPlayer === 1)}`}>
+                    {formatTime(player1Time)}
+                  </span>
+                  {showPlayer1Bonus && (
+                    <span className="ml-1 text-xs text-amber-500 dark:text-amber-400 font-bold flex items-center animate-pulse">
+                      <Zap className="h-3 w-3 mr-0.5" />+{QUICK_MOVE_BONUS}s
+                    </span>
+                  )}
+                </div>
+                <div className="text-xs font-medium">{gameSettings.player1.name}</div>
+                <Progress
+                  value={getProgressValue(player1Time)}
+                  className={`h-1.5 mt-1 w-32 ${currentPlayer === 1 ? "bg-blue-100 dark:bg-blue-950" : ""}`}
+                />
+              </div>
+
+              {/* Player 2 Timer */}
+              <div
+                className={`flex flex-col items-center ${currentPlayer === 2 ? "scale-110" : "opacity-80"} transition-all duration-300`}
+              >
+                <div className="flex items-center">
+                  <Clock className={`h-4 w-4 mr-1 ${currentPlayer === 2 ? "text-blue-500" : ""}`} />
+                  <span className={`text-sm font-medium ${getTimerColor(player2Time, currentPlayer === 2)}`}>
+                    {formatTime(player2Time)}
+                  </span>
+                  {showPlayer2Bonus && (
+                    <span className="ml-1 text-xs text-amber-500 dark:text-amber-400 font-bold flex items-center animate-pulse">
+                      <Zap className="h-3 w-3 mr-0.5" />+{QUICK_MOVE_BONUS}s
+                    </span>
+                  )}
+                </div>
+                <div className="text-xs font-medium">{gameSettings.player2.name}</div>
+                <Progress
+                  value={getProgressValue(player2Time)}
+                  className={`h-1.5 mt-1 w-32 ${currentPlayer === 2 ? "bg-blue-100 dark:bg-blue-950" : ""}`}
+                />
+              </div>
+            </div>
+          )}
+
+          {!winner && !timeIsUp ? (
             <CardDescription className="text-center">
               {currentPlayer === 1 ? gameSettings.player1.name : gameSettings.player2.name}'s turn
               <span className="text-2xl ml-2">{currentEmoji}</span>
+              {gameSettings.enableQuickMoveBonus && (player1Time !== null || player2Time !== null) && !timeIsUp && (
+                <div className="mt-1 flex flex-col items-center">
+                  <div className="flex items-center text-xs">
+                    <Zap className="h-3 w-3 mr-1 text-amber-500" />
+                    <span>Quick move: {turnTimeRemaining}s</span>
+                  </div>
+                  <Progress value={getTurnProgressValue()} className="h-1 mt-1 w-24 bg-amber-100 dark:bg-amber-950" />
+                </div>
+              )}
             </CardDescription>
           ) : (
             <CardDescription className="text-center text-xl font-bold">
-              {winner === 1 ? gameSettings.player1.name : gameSettings.player2.name} Wins!
+              {winner === 0
+                ? "It's a tie!"
+                : `${winner === 1 ? gameSettings.player1.name : gameSettings.player2.name} Wins!`}
+              {timeIsUp && <span className="text-sm block mt-1 font-normal text-muted-foreground">Time's up!</span>}
             </CardDescription>
           )}
         </CardHeader>
@@ -285,7 +572,7 @@ export default function GameBoardPage() {
                     : "bg-muted hover:bg-muted/80"
                 }`}
                 onClick={() => handleCellClick(index)}
-                disabled={winner !== null}
+                disabled={winner !== null || timeIsUp}
               >
                 {cell && cell.emoji}
               </button>
@@ -319,7 +606,7 @@ export default function GameBoardPage() {
           <Button variant="outline" onClick={() => navigate("/setup")}>
             New Game
           </Button>
-          {winner && <Button onClick={resetGame}>Play Again</Button>}
+          {(winner !== null || timeIsUp) && <Button onClick={resetGame}>Play Again</Button>}
         </CardFooter>
       </Card>
     </div>
