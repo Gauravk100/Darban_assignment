@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useContext } from "react"
+import { useState, useContext, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { Button } from "../components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../components/ui/card"
@@ -10,6 +10,7 @@ import { RadioGroup, RadioGroupItem } from "../components/ui/radio-group"
 import { Switch } from "../components/ui/switch"
 import ThemeToggle from "../components/ThemeToggle"
 import { EmojiContext } from "../contexts/EmojiContext"
+import { AlertCircle } from "lucide-react"
 
 const emojiCategories = {
   animals: ["🐶", "🐱", "🐵", "🐰", "🦊", "🐼", "🐨", "🦁", "🐯"],
@@ -28,8 +29,27 @@ export default function GameSetupPage() {
   const [player1Category, setPlayer1Category] = useState("animals")
   const [player2Category, setPlayer2Category] = useState("food")
   const [playWithComputer, setPlayWithComputer] = useState(false)
+  const [error, setError] = useState("")
+
+  // Update player2Category if it's the same as player1Category
+  useEffect(() => {
+    if (player1Category === player2Category && !playWithComputer) {
+      // Find the first available category that's different from player1Category
+      const availableCategories = Object.keys(emojiCategories).filter((category) => category !== player1Category)
+      if (availableCategories.length > 0) {
+        setPlayer2Category(availableCategories[0])
+      }
+    }
+  }, [player1Category, player2Category, playWithComputer])
 
   const handleStartGame = () => {
+    // Validate that players have different categories when not playing with computer
+    if (!playWithComputer && player1Category === player2Category) {
+      setError("Both players cannot choose the same emoji category. Please select different categories.")
+      return
+    }
+
+    setError("")
     setGameSettings({
       player1: {
         name: player1Name,
@@ -45,6 +65,19 @@ export default function GameSetupPage() {
     })
 
     navigate("/game")
+  }
+
+  const handlePlayer1CategoryChange = (category) => {
+    setPlayer1Category(category)
+
+    // If player 2 has the same category, change it
+    if (category === player2Category && !playWithComputer) {
+      // Find the first available category that's different
+      const availableCategories = Object.keys(emojiCategories).filter((cat) => cat !== category)
+      if (availableCategories.length > 0) {
+        setPlayer2Category(availableCategories[0])
+      }
+    }
   }
 
   return (
@@ -66,7 +99,11 @@ export default function GameSetupPage() {
 
           <div className="space-y-2">
             <Label>Player 1 Emoji Category</Label>
-            <RadioGroup value={player1Category} onValueChange={setPlayer1Category} className="grid grid-cols-1 gap-2">
+            <RadioGroup
+              value={player1Category}
+              onValueChange={handlePlayer1CategoryChange}
+              className="grid grid-cols-1 gap-2"
+            >
               {Object.entries(emojiCategories).map(([category, emojis]) => (
                 <div key={category} className="flex items-center space-x-2">
                   <RadioGroupItem value={category} id={`p1-${category}`} />
@@ -100,16 +137,32 @@ export default function GameSetupPage() {
                 >
                   {Object.entries(emojiCategories).map(([category, emojis]) => (
                     <div key={category} className="flex items-center space-x-2">
-                      <RadioGroupItem value={category} id={`p2-${category}`} />
-                      <Label htmlFor={`p2-${category}`} className="flex items-center">
+                      <RadioGroupItem value={category} id={`p2-${category}`} disabled={category === player1Category} />
+                      <Label
+                        htmlFor={`p2-${category}`}
+                        className={`flex items-center ${category === player1Category ? "opacity-50" : ""}`}
+                      >
                         <span className="capitalize mr-2">{category}</span>
                         <span className="text-lg">{emojis.slice(0, 3).join(" ")}</span>
+                        {category === player1Category && (
+                          <span className="ml-2 text-xs text-destructive flex items-center">
+                            <AlertCircle className="h-3 w-3 mr-1" />
+                            Already chosen by Player 1
+                          </span>
+                        )}
                       </Label>
                     </div>
                   ))}
                 </RadioGroup>
               </div>
             </>
+          )}
+
+          {error && (
+            <div className="text-destructive text-sm flex items-center">
+              <AlertCircle className="h-4 w-4 mr-1" />
+              {error}
+            </div>
           )}
         </CardContent>
         <CardFooter>

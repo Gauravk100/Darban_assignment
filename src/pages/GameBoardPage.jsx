@@ -26,6 +26,7 @@ export default function GameBoardPage() {
   const [player2Moves, setPlayer2Moves] = useState([])
   const [currentEmoji, setCurrentEmoji] = useState(null)
   const [winner, setWinner] = useState(null)
+  const [winningLine, setWinningLine] = useState([])
   const [showHelp, setShowHelp] = useState(false)
 
   useEffect(() => {
@@ -92,9 +93,10 @@ export default function GameBoardPage() {
     setBoard(newBoard)
 
     // Check for winner
-    const gameWinner = checkWinner(newBoard)
-    if (gameWinner) {
-      setWinner(gameWinner)
+    const result = checkWinner(newBoard)
+    if (result) {
+      setWinner(result.winner)
+      setWinningLine(result.line)
       return
     }
 
@@ -104,7 +106,7 @@ export default function GameBoardPage() {
     setCurrentEmoji(getRandomEmoji(nextPlayer))
 
     // Computer move
-    if (nextPlayer === 2 && gameSettings.playWithComputer && !gameWinner) {
+    if (nextPlayer === 2 && gameSettings.playWithComputer && !result) {
       setTimeout(() => {
         makeComputerMove(newBoard)
       }, 800)
@@ -163,9 +165,10 @@ export default function GameBoardPage() {
     setBoard(newBoard)
 
     // Check for winner
-    const gameWinner = checkWinner(newBoard)
-    if (gameWinner) {
-      setWinner(gameWinner)
+    const result = checkWinner(newBoard)
+    if (result) {
+      setWinner(result.winner)
+      setWinningLine(result.line)
       return
     }
 
@@ -195,7 +198,10 @@ export default function GameBoardPage() {
         board[a].player === board[b].player &&
         board[a].player === board[c].player
       ) {
-        return board[a].player
+        return {
+          winner: board[a].player,
+          line: [a, b, c],
+        }
       }
     }
 
@@ -209,6 +215,11 @@ export default function GameBoardPage() {
     setPlayer2Moves([])
     setCurrentEmoji(getRandomEmoji(1))
     setWinner(null)
+    setWinningLine([])
+  }
+
+  function isWinningCell(index) {
+    return winningLine.includes(index)
   }
 
   return (
@@ -268,7 +279,11 @@ export default function GameBoardPage() {
             {board.map((cell, index) => (
               <button
                 key={index}
-                className="bg-muted hover:bg-muted/80 rounded-md flex items-center justify-center text-4xl aspect-square transition-all"
+                className={`rounded-md flex items-center justify-center text-4xl aspect-square transition-all ${
+                  isWinningCell(index)
+                    ? "bg-green-500/20 dark:bg-green-500/30 border-2 border-green-500"
+                    : "bg-muted hover:bg-muted/80"
+                }`}
                 onClick={() => handleCellClick(index)}
                 disabled={winner !== null}
               >
