@@ -105,14 +105,19 @@ export default function GameBoardPage() {
 
     // Computer move
     if (nextPlayer === 2 && gameSettings.playWithComputer && !gameWinner) {
-      setTimeout(makeComputerMove, 500, newBoard)
+      setTimeout(() => {
+        makeComputerMove(newBoard)
+      }, 800)
     }
   }
 
   function makeComputerMove(currentBoard) {
+    // Create a new board copy to work with
+    const newBoard = [...currentBoard]
+
     // Find empty cells
     const emptyCells = []
-    currentBoard.forEach((cell, index) => {
+    newBoard.forEach((cell, index) => {
       if (cell === null) {
         emptyCells.push(index)
       }
@@ -120,18 +125,53 @@ export default function GameBoardPage() {
 
     if (emptyCells.length === 0) return
 
+    // Get a random emoji for the computer
+    const computerEmoji = getRandomEmoji(2)
+
+    // Choose a random empty cell
+    let targetCell
+
     // If player2 has 3 moves and needs to remove the oldest
     if (player2Moves.length === 3) {
-      // Filter out the oldest move position
+      // Filter out the oldest move position from valid moves
       const validCells = emptyCells.filter((cell) => cell !== player2Moves[0])
+
       if (validCells.length === 0) return
 
+      // Choose a random valid cell
       const randomIndex = Math.floor(Math.random() * validCells.length)
-      handleCellClick(validCells[randomIndex])
+      targetCell = validCells[randomIndex]
+
+      // Remove the oldest emoji from the board
+      newBoard[player2Moves[0]] = null
+
+      // Update player2Moves (remove oldest and add new)
+      setPlayer2Moves([...player2Moves.slice(1), targetCell])
     } else {
+      // Choose any empty cell
       const randomIndex = Math.floor(Math.random() * emptyCells.length)
-      handleCellClick(emptyCells[randomIndex])
+      targetCell = emptyCells[randomIndex]
+
+      // Add new move to player2Moves
+      setPlayer2Moves([...player2Moves, targetCell])
     }
+
+    // Place the computer's emoji
+    newBoard[targetCell] = { emoji: computerEmoji, player: 2 }
+
+    // Update the board
+    setBoard(newBoard)
+
+    // Check for winner
+    const gameWinner = checkWinner(newBoard)
+    if (gameWinner) {
+      setWinner(gameWinner)
+      return
+    }
+
+    // Switch back to player 1
+    setCurrentPlayer(1)
+    setCurrentEmoji(getRandomEmoji(1))
   }
 
   function checkWinner(board) {
