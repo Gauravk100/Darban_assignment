@@ -10,50 +10,35 @@ export function PremiumSlider({ min = 1, max = 20, value, onChange, label, class
   const trackRef = useRef(null)
   const handleRef = useRef(null)
 
-  // Calculate the slider position as a percentage
-  const getPositionFromValue = (val) => {
-    return ((val - min) / (max - min)) * 100
-  }
-
-  // Calculate the value from a position percentage
-  const getValueFromPosition = (position) => {
-    const rawValue = min + ((max - min) * position) / 100
-    return Math.round(rawValue)
-  }
-
-  // Position as percentage (0-100)
+  const getPositionFromValue = (val) => ((val - min) / (max - min)) * 100
+  const getValueFromPosition = (position) => Math.round(min + ((max - min) * position) / 100)
   const position = getPositionFromValue(sliderValue)
 
-  // Update internal state when external value changes
   useEffect(() => {
     if (value !== undefined && value !== sliderValue) {
       setSliderValue(value)
     }
   }, [value])
 
-  // Update parent component when our state changes
   useEffect(() => {
     if (onChange && value !== sliderValue) {
       onChange(sliderValue)
     }
   }, [sliderValue, onChange, value])
 
-  // Mouse/touch event handlers
   const handleMouseDown = (e) => {
     setIsDragging(true)
     setShowTooltip(true)
     updateValueFromClientX(e.clientX)
     document.addEventListener("mousemove", handleMouseMove)
     document.addEventListener("mouseup", handleMouseUp)
-    e.preventDefault() // Prevent text selection
+    e.preventDefault()
   }
 
   const handleMouseMove = (e) => {
     if (isDragging) {
       updateValueFromClientX(e.clientX)
     }
-
-    // Update glow effect
     if (sliderRef.current) {
       const rect = sliderRef.current.getBoundingClientRect()
       const x = ((e.clientX - rect.left) / rect.width) * 100
@@ -74,17 +59,11 @@ export function PremiumSlider({ min = 1, max = 20, value, onChange, label, class
     }
   }
 
-  const handleMouseEnter = () => {
-    setShowTooltip(true)
-  }
-
+  const handleMouseEnter = () => setShowTooltip(true)
   const handleMouseLeave = () => {
-    if (!isDragging) {
-      setShowTooltip(false)
-    }
+    if (!isDragging) setShowTooltip(false)
   }
 
-  // Update the slider value based on clientX position
   const updateValueFromClientX = (clientX) => {
     if (trackRef.current) {
       const rect = trackRef.current.getBoundingClientRect()
@@ -95,18 +74,17 @@ export function PremiumSlider({ min = 1, max = 20, value, onChange, label, class
     }
   }
 
-  // Handle touch events
   const handleTouchStart = (e) => {
     setIsDragging(true)
     setShowTooltip(true)
     updateValueFromClientX(e.touches[0].clientX)
-    e.preventDefault() // Prevent scrolling
+    e.preventDefault()
   }
 
   const handleTouchMove = (e) => {
     if (isDragging) {
       updateValueFromClientX(e.touches[0].clientX)
-      e.preventDefault() // Prevent scrolling
+      e.preventDefault()
     }
   }
 
@@ -126,7 +104,7 @@ export function PremiumSlider({ min = 1, max = 20, value, onChange, label, class
 
       <div
         ref={sliderRef}
-        className="relative py-6 px-1 touch-none cursor-pointer"
+        className="relative py-6 px-4 touch-none cursor-pointer"
         onClick={handleSliderClick}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
@@ -139,43 +117,43 @@ export function PremiumSlider({ min = 1, max = 20, value, onChange, label, class
             : "none",
         }}
       >
-        {/* Slider Track Background */}
         <div
           ref={trackRef}
-          className="absolute inset-0 my-auto h-2 mx-3 bg-white/10 rounded-full overflow-hidden"
+          className="absolute inset-0 my-auto h-2 bg-white/10 rounded-full overflow-hidden"
           onMouseDown={handleMouseDown}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >
-          {/* Filled Track */}
           <div
             className="absolute h-full bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full transition-all duration-200"
             style={{ width: `${position}%` }}
           ></div>
         </div>
 
-        {/* Value Tooltip */}
         <div
-          className={`absolute -top-8 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-2 py-1 rounded-md font-semibold text-sm transform -translate-x-1/2 transition-all duration-200 shadow-lg ${
+          className={`absolute -top-8 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-2 py-1 rounded-md font-semibold text-sm transition-all duration-200 shadow-lg ${
             showTooltip ? "opacity-100 scale-100" : "opacity-0 scale-90"
           }`}
-          style={{ left: `calc(${position}% + 12px)` }}
+          style={{
+            left: `${position}%`,
+            transform: "translate(-50%, -100%)",
+          }}
         >
           {sliderValue}m
           <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-purple-600"></div>
         </div>
 
-        {/* Custom Handle */}
         <div
           ref={handleRef}
-          className={`absolute top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 border-2 border-white shadow-lg transition-all ${
+          className={`absolute top-1/2 w-6 h-6 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 border-2 border-white shadow-lg transition-all ${
             isDragging
               ? "cursor-grabbing scale-110 shadow-purple-500/50"
               : "cursor-grab hover:scale-110 hover:shadow-purple-500/30"
           }`}
           style={{
-            left: `calc(${position}% + 12px - 12px)`,
+            left: `${position}%`,
+            transform: "translate(-50%, -50%)",
             transition: isDragging ? "none" : "all 0.2s cubic-bezier(0.33, 1, 0.68, 1)",
           }}
           onMouseDown={handleMouseDown}
@@ -184,8 +162,7 @@ export function PremiumSlider({ min = 1, max = 20, value, onChange, label, class
           onTouchEnd={handleTouchEnd}
         ></div>
 
-        {/* Tick Marks */}
-        <div className="absolute inset-x-3 top-1/2 -translate-y-1/2 flex justify-between pointer-events-none">
+        <div className="absolute inset-x-4 top-1/2 -translate-y-1/2 flex justify-between pointer-events-none">
           {[...Array(5)].map((_, i) => (
             <div key={i} className="w-0.5 h-2 bg-white/20 rounded-full"></div>
           ))}

@@ -134,7 +134,7 @@ export default function GameSetupPage() {
           variant="outline"
           size="sm"
           onClick={() => navigate("/")}
-          className="bg-white/10 dark:bg-white/5 border-white/20 dark:border-white/10 text-white hover:bg-white/20 dark:hover:bg-white/10"
+          className="bg-white/10 dark:bg-white/5 border-white/20 dark:border-white/10 text-grey-500 hover:bg-white/20 dark:hover:bg-white/10"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Home
@@ -280,16 +280,71 @@ export default function GameSetupPage() {
                         className={`transition-all duration-300 hover:-translate-y-1 ${playWithComputer ? "computer-active" : ""}`}
                       >
                         {playWithComputer ? (
-                          <div className="bg-gradient-to-r from-blue-500/20 to-blue-600/20 rounded-2xl p-6 border border-blue-400/30 h-full flex flex-col justify-center items-center text-center">
-                            <div className="h-16 w-16 rounded-xl bg-blue-500/30 flex items-center justify-center mb-4">
-                              <Target className="h-8 w-8 text-blue-300" />
+                          <div className="bg-gradient-to-r from-blue-500/20 to-blue-600/20 rounded-2xl p-6 border border-blue-400/30 h-full">
+                            <div className="flex items-center mb-4">
+                              <div className="h-10 w-10 rounded-xl bg-blue-500/30 flex items-center justify-center mr-3">
+                                <Target className="h-5 w-5 text-blue-300" />
+                              </div>
+                              <h3 className="text-xl font-bold text-white">Computer Opponent</h3>
                             </div>
-                            <h3 className="text-xl font-bold text-white mb-2">Computer Opponent</h3>
-                            <p className="text-white/70 mb-4">You'll be playing against our intelligent AI opponent.</p>
-                            <div className="bg-white/10 rounded-xl p-4 border border-white/20 w-full">
-                              <div className="flex items-center justify-between">
-                                <span className="text-white/80">Difficulty</span>
-                                <span className="text-white font-medium">Adaptive</span>
+
+                            <div className="space-y-4">
+                              <div className="bg-white/10 rounded-xl p-4 border border-white/20">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-white/80">Difficulty</span>
+                                  <span className="text-white font-medium">Adaptive</span>
+                                </div>
+                              </div>
+
+                              <div>
+                                <Label className="text-white/90 font-medium mb-3 block">
+                                  Choose Computer's Emoji Category
+                                </Label>
+                                <RadioGroup
+                                  value={player2Category}
+                                  onValueChange={setPlayer2Category}
+                                  className="grid grid-cols-1 gap-3"
+                                >
+                                  {Object.entries(emojiCategories).map(([category, emojis]) => (
+                                    <div
+                                      key={category}
+                                      className={`flex items-start space-x-3 bg-white/10 rounded-xl p-4 border border-white/20 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg
+                                      ${category === player1Category ? "opacity-50 cursor-not-allowed" : "hover:bg-white/20"}`}
+                                    >
+                                      <RadioGroupItem
+                                        value={category}
+                                        id={`computer-${category}`}
+                                        disabled={category === player1Category}
+                                        className="border-blue-400/50 text-blue-400 mt-1"
+                                      />
+                                      <Label
+                                        htmlFor={`computer-${category}`}
+                                        className={`flex-1 ${category === player1Category ? "cursor-not-allowed" : "cursor-pointer"}`}
+                                      >
+                                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                                          <div className="flex items-center">
+                                            <span className="capitalize text-white font-medium mr-3">{category}</span>
+                                            <div className="flex space-x-1">
+                                              {emojis.slice(0, 3).map((emoji, i) => (
+                                                <span key={i} className="text-xl">
+                                                  {emoji}
+                                                </span>
+                                              ))}
+                                            </div>
+                                          </div>
+                                          {category === player1Category && (
+                                            <div className="flex items-center">
+                                              <span className="text-xs bg-amber-500/20 border border-amber-400/30 rounded-full px-2 py-1 flex items-center whitespace-nowrap">
+                                                <AlertCircle className="h-3 w-3 mr-1 text-amber-400 flex-shrink-0" />
+                                                <span className="text-amber-200">Taken</span>
+                                              </span>
+                                            </div>
+                                          )}
+                                        </div>
+                                      </Label>
+                                    </div>
+                                  ))}
+                                </RadioGroup>
                               </div>
                             </div>
                           </div>
