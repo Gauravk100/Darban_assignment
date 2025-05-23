@@ -113,15 +113,15 @@ export default function GameSetupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-animated relative overflow-hidden">
       {/* Background Elements */}
       <div className="absolute inset-0">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-pink-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-500/20 dark:bg-purple-400/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-pink-500/20 dark:bg-pink-400/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
       </div>
 
       {/* Grid Pattern */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.03)_1px,transparent_1px)] bg-[size:50px_50px]"></div>
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.03)_1px,transparent_1px)] dark:bg-[linear-gradient(rgba(255,255,255,.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.01)_1px,transparent_1px)] bg-[size:50px_50px]"></div>
 
       {/* Navigation */}
       <nav className="relative z-50 flex items-center justify-between p-6">
@@ -129,7 +129,7 @@ export default function GameSetupPage() {
           variant="outline"
           size="sm"
           onClick={() => navigate("/")}
-          className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+          className="bg-white/10 dark:bg-white/5 border-white/20 dark:border-white/10 text-white hover:bg-white/20 dark:hover:bg-white/10"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Home
@@ -147,15 +147,17 @@ export default function GameSetupPage() {
                 <Settings className="h-8 w-8 text-white" />
               </div>
             </div>
-            <h1 className="text-4xl font-bold text-white mb-4">Game Setup</h1>
-            <p className="text-xl text-white/70">Configure your epic emoji battle</p>
+            <h1 className="text-4xl font-bold text-white dark:text-slate-50 mb-4">Game Setup</h1>
+            <p className="text-xl text-white/70 dark:text-slate-300">Configure your epic emoji battle</p>
           </div>
 
           {/* Setup Card */}
-          <Card className="bg-white/10 backdrop-blur-xl border-white/20 shadow-2xl">
+          <Card className="bg-white/10 dark:bg-white/5 backdrop-blur-xl border-white/20 dark:border-white/10 shadow-2xl">
             <CardHeader className="pb-4">
-              <CardTitle className="text-2xl font-bold text-white text-center">Customize Your Experience</CardTitle>
-              <CardDescription className="text-white/70 text-center text-base">
+              <CardTitle className="text-2xl font-bold text-white dark:text-slate-50 text-center">
+                Customize Your Experience
+              </CardTitle>
+              <CardDescription className="text-white/70 dark:text-slate-300 text-center text-base">
                 Set up players, choose categories, and configure game rules
               </CardDescription>
             </CardHeader>
@@ -456,7 +458,7 @@ export default function GameSetupPage() {
 
             <CardFooter className="pt-4 pb-8">
               <SocialButton className="w-full text-lg py-6" variant="gradient" onClick={handleStartGame}>
-                <Gamepad2 className="mr-2 h-6 w-6" />
+                <Gamepad2 className="h-6 w-6 mr-2" />
                 Launch Game
               </SocialButton>
             </CardFooter>

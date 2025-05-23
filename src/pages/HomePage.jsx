@@ -22,30 +22,30 @@ import {
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-animated relative overflow-hidden">
       {/* Background Elements */}
       <div className="absolute inset-0">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-500/30 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-pink-500/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-blue-500/20 rounded-full blur-3xl animate-pulse delay-500"></div>
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-500/30 dark:bg-purple-400/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-pink-500/30 dark:bg-pink-400/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-blue-500/20 dark:bg-blue-400/10 rounded-full blur-3xl animate-pulse delay-500"></div>
       </div>
 
       {/* Grid Pattern */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.05)_1px,transparent_1px)] bg-[size:50px_50px]"></div>
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.05)_1px,transparent_1px)] dark:bg-[linear-gradient(rgba(255,255,255,.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.02)_1px,transparent_1px)] bg-[size:50px_50px]"></div>
 
       {/* Navigation */}
       <nav className="relative z-50 flex items-center justify-between p-6 lg:px-8">
         <div className="flex items-center space-x-2">
-          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
             <Sparkles className="h-6 w-6 text-white" />
           </div>
-          <span className="text-2xl font-bold text-white">EmojiTTT</span>
+          <span className="text-2xl font-bold text-white dark:text-slate-100">EmojiTTT</span>
         </div>
         <div className="flex items-center space-x-4">
           <SocialButton
             variant="outline"
             size="sm"
-            className="hidden md:flex bg-white/10 border-white/20 text-white hover:bg-white/20"
+            className="hidden md:inline-flex bg-white/10 dark:bg-white/5 border-white/20 dark:border-white/10 text-white hover:bg-white/20 dark:hover:bg-white/10"
           >
             <Globe className="h-4 w-4 mr-2" />
             Community
@@ -66,16 +66,18 @@ export default function HomePage() {
             </div>
 
             {/* Main Heading */}
-            <h1 className="mx-auto max-w-4xl text-5xl font-extrabold tracking-tight text-white sm:text-7xl lg:text-8xl">
+            <h1 className="mx-auto max-w-4xl text-5xl font-extrabold tracking-tight text-white dark:text-slate-50 sm:text-7xl lg:text-8xl">
               <span className="block">Emoji</span>
-              <span className="block bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400 bg-clip-text text-transparent">
+              <span className="block bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400 dark:from-purple-300 dark:via-pink-300 dark:to-purple-300 bg-clip-text text-transparent">
                 Tic Tac Toe
               </span>
-              <span className="block text-4xl sm:text-5xl lg:text-6xl mt-2 text-white/80">Reimagined</span>
+              <span className="block text-4xl sm:text-5xl lg:text-6xl mt-2 text-white/80 dark:text-slate-200">
+                Reimagined
+              </span>
             </h1>
 
             {/* Subtitle */}
-            <p className="mx-auto mt-8 max-w-2xl text-xl leading-8 text-white/80 sm:text-2xl">
+            <p className="mx-auto mt-8 max-w-2xl text-xl leading-8 text-white/80 dark:text-slate-300 sm:text-2xl">
               Experience the classic game with a revolutionary twist. Strategic gameplay meets beautiful design in the
               most addictive puzzle game of 2024.
             </p>
@@ -88,7 +90,7 @@ export default function HomePage() {
                   variant="gradient"
                   className="w-full sm:w-auto text-lg px-8 py-4 shadow-2xl shadow-purple-500/25 hover:shadow-purple-500/40 transition-all duration-300"
                 >
-                  <Play className="mr-2 h-5 w-5" />
+                  <Play className="h-5 w-5 mr-2" />
                   Start Playing Now
                 </SocialButton>
               </Link>
@@ -97,7 +99,7 @@ export default function HomePage() {
                 variant="outline"
                 className="w-full sm:w-auto bg-white/10 border-white/20 text-white hover:bg-white/20 px-8 py-4"
               >
-                <Users className="mr-2 h-5 w-5" />
+                <Users className="h-5 w-5 mr-2" />
                 Join 50k+ Players
               </SocialButton>
             </div>
@@ -208,7 +210,7 @@ export default function HomePage() {
             <CardFooter className="px-8 pb-8">
               <Link to="/setup" className="w-full">
                 <SocialButton className="w-full" variant="gradient">
-                  <Gamepad2 className="mr-2 h-5 w-5" />
+                  <Gamepad2 className="h-5 w-5 mr-2" />
                   Try It Now
                 </SocialButton>
               </Link>
@@ -347,22 +349,22 @@ export default function HomePage() {
               to becoming an EmojiTTT champion today.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link to="/setup">
+              <Link to="/setup" className="w-full sm:w-auto">
                 <SocialButton
                   size="lg"
                   variant="gradient"
-                  className="text-lg px-8 py-4 shadow-2xl shadow-purple-500/25 hover:shadow-purple-500/40 transition-all duration-300"
+                  className="w-full text-lg px-8 py-4 shadow-2xl shadow-purple-500/25 hover:shadow-purple-500/40 transition-all duration-300"
                 >
-                  <Play className="mr-2 h-5 w-5" />
+                  <Play className="h-5 w-5 mr-2" />
                   Start Playing Free
                 </SocialButton>
               </Link>
               <SocialButton
                 size="lg"
                 variant="outline"
-                className="bg-white/10 border-white/20 text-white hover:bg-white/20 px-8 py-4"
+                className="w-full sm:w-auto bg-white/10 border-white/20 text-white hover:bg-white/20 px-8 py-4"
               >
-                <Globe className="mr-2 h-5 w-5" />
+                <Globe className="h-5 w-5 mr-2" />
                 View Leaderboard
               </SocialButton>
             </div>

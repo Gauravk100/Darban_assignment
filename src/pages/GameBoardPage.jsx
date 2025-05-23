@@ -204,8 +204,6 @@ export default function GameBoardPage() {
     }
   }, [showPlayer2Bonus])
 
-  if (!gameSettings) return null
-
   function startTurnTimer() {
     if (turnTimerRef.current) {
       clearInterval(turnTimerRef.current)
@@ -508,15 +506,15 @@ export default function GameBoardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-animated relative overflow-hidden">
       {/* Background Elements */}
       <div className="absolute inset-0">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-pink-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-500/20 dark:bg-purple-400/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-pink-500/20 dark:bg-pink-400/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
       </div>
 
       {/* Grid Pattern */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.03)_1px,transparent_1px)] bg-[size:50px_50px]"></div>
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.03)_1px,transparent_1px)] dark:bg-[linear-gradient(rgba(255,255,255,.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.01)_1px,transparent_1px)] bg-[size:50px_50px]"></div>
 
       {/* Navigation */}
       <nav className="relative z-50 flex items-center justify-between p-6">
@@ -524,7 +522,7 @@ export default function GameBoardPage() {
           variant="outline"
           size="sm"
           onClick={() => navigate("/setup")}
-          className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+          className="bg-white/10 dark:bg-white/5 border-white/20 dark:border-white/10 text-white hover:bg-white/20 dark:hover:bg-white/10"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Setup
@@ -535,13 +533,13 @@ export default function GameBoardPage() {
               <SocialButton
                 variant="outline"
                 size="sm"
-                className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                className="bg-white/10 dark:bg-white/5 border-white/20 dark:border-white/10 text-white hover:bg-white/20 dark:hover:bg-white/10"
               >
                 <AlertCircle className="h-4 w-4 mr-2" />
                 Rules
               </SocialButton>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl bg-white/10 backdrop-blur-xl border-white/20 text-white">
+            <DialogContent className="max-w-2xl bg-white/10 dark:bg-slate-900/90 backdrop-blur-xl border border-white/20 dark:border-slate-700/50 text-white dark:text-slate-100">
               <DialogHeader>
                 <DialogTitle className="text-2xl flex items-center text-white">
                   <Sparkles className="h-6 w-6 mr-3 text-purple-400" />
@@ -621,14 +619,16 @@ export default function GameBoardPage() {
       <div className="relative z-10 px-6 lg:px-8 pb-24">
         <div className="mx-auto max-w-2xl pt-8">
           {/* Game Card */}
-          <Card className="bg-white/10 backdrop-blur-xl border-white/20 shadow-2xl">
+          <Card className="bg-white/10 dark:bg-white/5 backdrop-blur-xl border-white/20 dark:border-white/10 shadow-2xl">
             <CardHeader className="pb-4">
               <div className="flex justify-center mb-4">
                 <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-2xl">
                   <Sparkles className="h-8 w-8 text-white" />
                 </div>
               </div>
-              <CardTitle className="text-3xl font-bold text-center text-white">Emoji Battle Arena</CardTitle>
+              <CardTitle className="text-3xl font-bold text-center text-white dark:text-slate-50">
+                Emoji Battle Arena
+              </CardTitle>
 
               {/* Timer Display */}
               {gameSettings.gameDuration && (
@@ -763,8 +763,8 @@ export default function GameBoardPage() {
                     className={`aspect-square flex items-center justify-center text-5xl rounded-2xl transition-all duration-300 transform hover:scale-105 active:scale-95
                       ${
                         isWinningCell(index)
-                          ? "bg-gradient-to-br from-green-400/30 to-emerald-500/30 border-2 border-green-400 shadow-lg shadow-green-400/25 animate-pulse"
-                          : "bg-white/10 hover:bg-white/20 border border-white/20"
+                          ? "bg-gradient-to-br from-green-400/30 to-emerald-500/30 dark:from-green-400/20 dark:to-emerald-500/20 border-2 border-green-400 dark:border-green-300 shadow-lg shadow-green-400/25 animate-pulse"
+                          : "bg-white/10 dark:bg-white/5 hover:bg-white/20 dark:hover:bg-white/10 border border-white/20 dark:border-white/10"
                       }`}
                     onClick={() => handleCellClick(index)}
                     disabled={winner !== null || timeIsUp}
@@ -820,7 +820,7 @@ export default function GameBoardPage() {
               <SocialButton
                 variant="outline"
                 onClick={() => navigate("/setup")}
-                className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                className="bg-white/10 dark:bg-white/5 border-white/20 dark:border-white/10 text-white hover:bg-white/20 dark:hover:bg-white/10"
               >
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 New Game
