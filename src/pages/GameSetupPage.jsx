@@ -7,9 +7,9 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "../components/ui/input"
 import { Label } from "../components/ui/label"
 import { RadioGroup, RadioGroupItem } from "../components/ui/radio-group"
-import { Slider } from "../components/ui/slider"
 import { Switch } from "../components/ui/switch"
 import { Tabs, TabsList, TabsTrigger } from "../components/ui/tabs"
+import { PremiumSlider } from "../components/ui/PremiumSlider"
 import ThemeToggle from "../components/ThemeToggle"
 import { EmojiContext } from "../contexts/EmojiContext"
 import { AlertCircle, ArrowLeft, Clock, Gamepad2, Zap, Users, Settings, Crown, Timer, Target } from "lucide-react"
@@ -91,7 +91,6 @@ export default function GameSetupPage() {
 
     // Log for debugging
     console.log("Starting game with settings:", settings)
-    console.log("Separate timers setting:", separateTimers)
 
     // Set the game settings in context
     setGameSettings(settings)
@@ -113,9 +112,9 @@ export default function GameSetupPage() {
     }
   }
 
-  // Handle tab change with animation
-  const handleTabChange = (value) => {
-    setActiveTab(value)
+  // Handle slider value change
+  const handleSliderChange = (value) => {
+    setCustomMinutes(value)
   }
 
   return (
@@ -169,7 +168,7 @@ export default function GameSetupPage() {
             </CardHeader>
 
             <CardContent className="space-y-8">
-              <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsList className="grid w-full grid-cols-2 p-1 bg-white/10 backdrop-blur-sm border border-white/20">
                   <TabsTrigger
                     value="players"
@@ -187,132 +186,12 @@ export default function GameSetupPage() {
                   </TabsTrigger>
                 </TabsList>
 
-                <style jsx global>{`
-    /* Smooth transitions for settings and toggles */
-    .settings-transition {
-      transition: all 0.5s cubic-bezier(0.33, 1, 0.68, 1);
-    }
-    
-    .player-section {
-      transition: opacity 0.5s ease, max-height 0.5s cubic-bezier(0.33, 1, 0.68, 1), transform 0.5s cubic-bezier(0.33, 1, 0.68, 1);
-      max-height: 1000px;
-      opacity: 1;
-      transform: translateY(0);
-    }
-    
-    .player-section.hidden {
-      max-height: 0;
-      opacity: 0;
-      transform: translateY(-20px);
-      overflow: hidden;
-      margin: 0;
-      padding: 0;
-    }
-    
-    .custom-duration {
-      transition: opacity 0.5s ease, max-height 0.5s ease, transform 0.5s ease;
-      max-height: 300px;
-      opacity: 1;
-      transform: translateY(0);
-    }
-    
-    .custom-duration.hidden {
-      max-height: 0;
-      opacity: 0;
-      transform: translateY(-10px);
-      overflow: hidden;
-      margin: 0;
-      padding: 0;
-    }
-    
-    .radio-card {
-      transition: all 0.3s ease;
-    }
-    
-    .radio-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-    }
-    
-    .category-card {
-      transition: all 0.3s ease;
-    }
-    
-    .category-card:not(.disabled):hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-    }
-    
-    .switch-thumb {
-      transition: transform 0.3s cubic-bezier(0.33, 1, 0.68, 1);
-    }
-    
-    /* Side-by-side layout transitions */
-    .players-container {
-      transition: all 0.5s cubic-bezier(0.33, 1, 0.68, 1);
-    }
-    
-    .player-column {
-      transition: all 0.5s cubic-bezier(0.33, 1, 0.68, 1);
-    }
-    
-    .computer-toggle {
-      transition: all 0.3s ease;
-    }
-    
-    .computer-toggle:hover {
-      transform: translateY(-2px);
-    }
-    
-    /* Tab content transitions */
-    .tab-content {
-      transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.33, 1, 0.68, 1);
-      opacity: 1;
-      transform: translateY(0) scale(1);
-      transform-origin: top center;
-    }
-    
-    .tab-content.entering {
-      opacity: 0;
-      transform: translateY(20px) scale(0.98);
-    }
-    
-    .tab-content.exiting {
-      opacity: 0;
-      transform: translateY(-20px) scale(0.98);
-      position: absolute;
-      width: 100%;
-    }
-    
-    .tabs-container {
-      position: relative;
-      min-height: 500px;
-    }
-    
-    /* Tab indicator animation */
-    .tab-indicator {
-      position: absolute;
-      bottom: -2px;
-      height: 2px;
-      background: linear-gradient(to right, #a855f7, #ec4899);
-      transition: all 0.3s cubic-bezier(0.33, 1, 0.68, 1);
-    }
-    
-    /* Responsive adjustments */
-    @media (max-width: 767px) {
-      .player-column.second {
-        margin-top: 1.5rem;
-      }
-    }
-  `}</style>
-
-                <div className="tabs-container mt-8">
+                <div className="relative min-h-[500px] mt-8">
                   <div
-                    className={`tab-content ${activeTab === "players" ? "" : "exiting"}`}
-                    style={{ display: activeTab === "players" ? "block" : "none" }}
+                    className={`transition-all duration-500 ease-out ${activeTab === "players" ? "opacity-100 translate-y-0 scale-100" : "opacity-0 -translate-y-4 scale-95 absolute inset-0 pointer-events-none"}`}
                   >
                     {/* Computer Toggle - Moved to top */}
-                    <div className="bg-white/10 rounded-2xl p-6 border border-white/20 settings-transition computer-toggle mb-6">
+                    <div className="bg-white/10 rounded-2xl p-6 border border-white/20 transition-all duration-300 hover:-translate-y-1 mb-6">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center">
                           <div className="h-10 w-10 rounded-xl bg-blue-500/30 flex items-center justify-center mr-3">
@@ -327,15 +206,15 @@ export default function GameSetupPage() {
                           id="computer-opponent"
                           checked={playWithComputer}
                           onCheckedChange={setPlayWithComputer}
-                          className="data-[state=checked]:bg-blue-500 settings-transition"
+                          className="data-[state=checked]:bg-blue-500 transition-all duration-300"
                         />
                       </div>
                     </div>
 
                     {/* Players Side by Side */}
-                    <div className="players-container grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 transition-all duration-500">
                       {/* Player 1 Setup */}
-                      <div className="player-column first">
+                      <div className="transition-all duration-300 hover:-translate-y-1">
                         <div className="bg-gradient-to-r from-purple-500/20 to-purple-600/20 rounded-2xl p-6 border border-purple-400/30 h-full">
                           <div className="flex items-center mb-4">
                             <div className="h-10 w-10 rounded-xl bg-purple-500/30 flex items-center justify-center mr-3">
@@ -368,7 +247,7 @@ export default function GameSetupPage() {
                                 {Object.entries(emojiCategories).map(([category, emojis]) => (
                                   <div
                                     key={category}
-                                    className="flex items-center space-x-3 bg-white/10 rounded-xl p-4 border border-white/20 hover:bg-white/20 transition-all duration-300 category-card"
+                                    className="flex items-center space-x-3 bg-white/10 rounded-xl p-4 border border-white/20 hover:bg-white/20 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
                                   >
                                     <RadioGroupItem
                                       value={category}
@@ -397,7 +276,9 @@ export default function GameSetupPage() {
                       </div>
 
                       {/* Player 2 Setup or Computer Message */}
-                      <div className={`player-column second ${playWithComputer ? "computer-active" : ""}`}>
+                      <div
+                        className={`transition-all duration-300 hover:-translate-y-1 ${playWithComputer ? "computer-active" : ""}`}
+                      >
                         {playWithComputer ? (
                           <div className="bg-gradient-to-r from-blue-500/20 to-blue-600/20 rounded-2xl p-6 border border-blue-400/30 h-full flex flex-col justify-center items-center text-center">
                             <div className="h-16 w-16 rounded-xl bg-blue-500/30 flex items-center justify-center mb-4">
@@ -445,8 +326,8 @@ export default function GameSetupPage() {
                                   {Object.entries(emojiCategories).map(([category, emojis]) => (
                                     <div
                                       key={category}
-                                      className={`flex items-start space-x-3 bg-white/10 rounded-xl p-4 border border-white/20 transition-all duration-300 category-card
-                                      ${category === player1Category ? "opacity-50 cursor-not-allowed disabled" : "hover:bg-white/20"}`}
+                                      className={`flex items-start space-x-3 bg-white/10 rounded-xl p-4 border border-white/20 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg
+                                      ${category === player1Category ? "opacity-50 cursor-not-allowed" : "hover:bg-white/20"}`}
                                     >
                                       <RadioGroupItem
                                         value={category}
@@ -491,8 +372,7 @@ export default function GameSetupPage() {
                   </div>
 
                   <div
-                    className={`tab-content ${activeTab === "settings" ? "" : "exiting"}`}
-                    style={{ display: activeTab === "settings" ? "block" : "none" }}
+                    className={`transition-all duration-500 ease-out ${activeTab === "settings" ? "opacity-100 translate-y-0 scale-100" : "opacity-0 -translate-y-4 scale-95 absolute inset-0 pointer-events-none"}`}
                   >
                     {/* Game Duration */}
                     <div className="bg-white/10 rounded-2xl p-6 border border-white/20">
@@ -513,7 +393,7 @@ export default function GameSetupPage() {
                             {gameDurations.slice(0, 3).map((duration) => (
                               <div
                                 key={duration.value}
-                                className="flex items-center space-x-3 bg-white/10 rounded-xl p-4 border border-white/20 hover:bg-white/20 transition-all duration-300 radio-card"
+                                className="flex items-center space-x-3 bg-white/10 rounded-xl p-4 border border-white/20 hover:bg-white/20 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
                               >
                                 <RadioGroupItem
                                   value={duration.value}
@@ -546,7 +426,7 @@ export default function GameSetupPage() {
                             {gameDurations.slice(3).map((duration) => (
                               <div
                                 key={duration.value}
-                                className="flex items-center space-x-3 bg-white/10 rounded-xl p-4 border border-white/20 hover:bg-white/20 transition-all duration-300 radio-card"
+                                className="flex items-center space-x-3 bg-white/10 rounded-xl p-4 border border-white/20 hover:bg-white/20 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
                               >
                                 <RadioGroupItem
                                   value={duration.value}
@@ -570,25 +450,14 @@ export default function GameSetupPage() {
                           </RadioGroup>
 
                           {gameDuration === "custom" && (
-                            <div className="bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-xl p-4 border border-blue-400/30 custom-duration mt-3">
-                              <div className="flex justify-between items-center mb-3">
-                                <Label htmlFor="custom-time" className="text-white font-medium">
-                                  Custom Duration: {customMinutes} minutes
-                                </Label>
-                              </div>
-                              <Slider
-                                id="custom-time"
+                            <div className="bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-xl p-4 border border-blue-400/30 mt-3 transition-all duration-300 transform">
+                              <PremiumSlider
                                 min={1}
                                 max={20}
-                                step={1}
-                                value={[customMinutes]}
-                                onValueChange={(value) => setCustomMinutes(value[0])}
-                                className="w-full"
+                                value={customMinutes}
+                                onChange={handleSliderChange}
+                                label="Custom Duration"
                               />
-                              <div className="flex justify-between text-sm text-white/60 mt-2">
-                                <span>1 min</span>
-                                <span>20 min</span>
-                              </div>
                             </div>
                           )}
                         </div>
@@ -597,8 +466,8 @@ export default function GameSetupPage() {
 
                     {/* Advanced Settings */}
                     {gameDuration !== "eternal" && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 settings-transition mt-6">
-                        <div className="bg-white/10 rounded-2xl p-6 border border-white/20">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 transition-all duration-500 mt-6">
+                        <div className="bg-white/10 rounded-2xl p-6 border border-white/20 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center">
                               <div className="h-10 w-10 rounded-xl bg-green-500/30 flex items-center justify-center mr-3">
@@ -615,12 +484,12 @@ export default function GameSetupPage() {
                               id="separate-timers"
                               checked={separateTimers}
                               onCheckedChange={setSeparateTimers}
-                              className="data-[state=checked]:bg-green-500 settings-transition"
+                              className="data-[state=checked]:bg-green-500 transition-all duration-300"
                             />
                           </div>
                         </div>
 
-                        <div className="bg-white/10 rounded-2xl p-6 border border-white/20">
+                        <div className="bg-white/10 rounded-2xl p-6 border border-white/20 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center">
                               <div className="h-10 w-10 rounded-xl bg-yellow-500/30 flex items-center justify-center mr-3">
@@ -637,7 +506,7 @@ export default function GameSetupPage() {
                               id="quick-move-bonus"
                               checked={enableQuickMoveBonus}
                               onCheckedChange={setEnableQuickMoveBonus}
-                              className="data-[state=checked]:bg-yellow-500 settings-transition"
+                              className="data-[state=checked]:bg-yellow-500 transition-all duration-300"
                             />
                           </div>
                         </div>
