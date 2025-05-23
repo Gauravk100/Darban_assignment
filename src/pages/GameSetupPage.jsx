@@ -12,7 +12,7 @@ import { Switch } from "../components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs"
 import ThemeToggle from "../components/ThemeToggle"
 import { EmojiContext } from "../contexts/EmojiContext"
-import { AlertCircle, Clock, Gamepad2, Zap } from "lucide-react"
+import { AlertCircle, ArrowLeft, Clock, Gamepad2, Zap, Users, Settings, Crown, Timer, Target } from "lucide-react"
 
 const emojiCategories = {
   animals: ["🐶", "🐱", "🐵", "🐰", "🦊", "🐼", "🐨", "🦁", "🐯"],
@@ -23,11 +23,11 @@ const emojiCategories = {
 }
 
 const gameDurations = [
-  { value: "eternal", label: "Eternal", description: "Play until someone wins" },
-  { value: "2", label: "2 Minutes", description: "Quick game" },
-  { value: "3", label: "3 Minutes", description: "Standard game" },
-  { value: "4", label: "4 Minutes", description: "Extended game" },
-  { value: "custom", label: "Custom Time", description: "Set your own time limit" },
+  { value: "eternal", label: "Eternal", description: "Play until someone wins", icon: "♾️" },
+  { value: "2", label: "2 Minutes", description: "Quick game", icon: "⚡" },
+  { value: "3", label: "3 Minutes", description: "Standard game", icon: "🎯" },
+  { value: "4", label: "4 Minutes", description: "Extended game", icon: "🏆" },
+  { value: "custom", label: "Custom Time", description: "Set your own time limit", icon: "⚙️" },
 ]
 
 export default function GameSetupPage() {
@@ -42,7 +42,7 @@ export default function GameSetupPage() {
   const [gameDuration, setGameDuration] = useState("eternal")
   const [customMinutes, setCustomMinutes] = useState(5)
   const [enableQuickMoveBonus, setEnableQuickMoveBonus] = useState(true)
-  const [separateTimers, setSeparateTimers] = useState(false) // Changed default to false
+  const [separateTimers, setSeparateTimers] = useState(false)
   const [error, setError] = useState("")
 
   // Update player2Category if it's the same as player1Category
@@ -113,191 +113,356 @@ export default function GameSetupPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-background">
-      <div className="absolute top-4 right-4">
-        <ThemeToggle />
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
+      {/* Background Elements */}
+      <div className="absolute inset-0">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-pink-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
       </div>
 
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center">Game Setup</CardTitle>
-          <CardDescription className="text-center">Configure your emoji battle</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <Tabs defaultValue="players" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="players">Players</TabsTrigger>
-              <TabsTrigger value="settings">Game Settings</TabsTrigger>
-            </TabsList>
-            <TabsContent value="players" className="space-y-6 mt-4">
-              <div className="space-y-2">
-                <Label htmlFor="player1">Player 1 Name</Label>
-                <Input id="player1" value={player1Name} onChange={(e) => setPlayer1Name(e.target.value)} />
-              </div>
+      {/* Grid Pattern */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.03)_1px,transparent_1px)] bg-[size:50px_50px]"></div>
 
-              <div className="space-y-2">
-                <Label>Player 1 Emoji Category</Label>
-                <RadioGroup
-                  value={player1Category}
-                  onValueChange={handlePlayer1CategoryChange}
-                  className="grid grid-cols-1 gap-2"
-                >
-                  {Object.entries(emojiCategories).map(([category, emojis]) => (
-                    <div key={category} className="flex items-center space-x-2">
-                      <RadioGroupItem value={category} id={`p1-${category}`} />
-                      <Label htmlFor={`p1-${category}`} className="flex items-center">
-                        <span className="capitalize mr-2">{category}</span>
-                        <span className="text-lg">{emojis.slice(0, 3).join(" ")}</span>
-                      </Label>
+      {/* Navigation */}
+      <nav className="relative z-50 flex items-center justify-between p-6">
+        <SocialButton
+          variant="outline"
+          size="sm"
+          onClick={() => navigate("/")}
+          className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Home
+        </SocialButton>
+        <ThemeToggle />
+      </nav>
+
+      {/* Main Content */}
+      <div className="relative z-10 px-6 lg:px-8 pb-24">
+        <div className="mx-auto max-w-2xl pt-8">
+          {/* Header */}
+          <div className="text-center mb-12">
+            <div className="flex justify-center mb-6">
+              <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-2xl">
+                <Settings className="h-8 w-8 text-white" />
+              </div>
+            </div>
+            <h1 className="text-4xl font-bold text-white mb-4">Game Setup</h1>
+            <p className="text-xl text-white/70">Configure your epic emoji battle</p>
+          </div>
+
+          {/* Setup Card */}
+          <Card className="bg-white/10 backdrop-blur-xl border-white/20 shadow-2xl">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-2xl font-bold text-white text-center">Customize Your Experience</CardTitle>
+              <CardDescription className="text-white/70 text-center text-base">
+                Set up players, choose categories, and configure game rules
+              </CardDescription>
+            </CardHeader>
+
+            <CardContent className="space-y-8">
+              <Tabs defaultValue="players" className="w-full">
+                <TabsList className="grid w-full grid-cols-2 p-1 bg-white/10 backdrop-blur-sm border border-white/20">
+                  <TabsTrigger
+                    value="players"
+                    className="text-white data-[state=active]:bg-white/20 data-[state=active]:text-white"
+                  >
+                    <Users className="h-4 w-4 mr-2" />
+                    Players
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="settings"
+                    className="text-white data-[state=active]:bg-white/20 data-[state=active]:text-white"
+                  >
+                    <Settings className="h-4 w-4 mr-2" />
+                    Game Rules
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="players" className="space-y-8 mt-8">
+                  {/* Player 1 Setup */}
+                  <div className="space-y-6">
+                    <div className="bg-gradient-to-r from-purple-500/20 to-purple-600/20 rounded-2xl p-6 border border-purple-400/30">
+                      <div className="flex items-center mb-4">
+                        <div className="h-10 w-10 rounded-xl bg-purple-500/30 flex items-center justify-center mr-3">
+                          <Crown className="h-5 w-5 text-purple-300" />
+                        </div>
+                        <h3 className="text-xl font-bold text-white">Player 1</h3>
+                      </div>
+
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="player1" className="text-white/90 font-medium">
+                            Player Name
+                          </Label>
+                          <Input
+                            id="player1"
+                            value={player1Name}
+                            onChange={(e) => setPlayer1Name(e.target.value)}
+                            className="mt-2 bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-purple-400/50"
+                            placeholder="Enter player 1 name"
+                          />
+                        </div>
+
+                        <div>
+                          <Label className="text-white/90 font-medium mb-3 block">Choose Emoji Category</Label>
+                          <RadioGroup
+                            value={player1Category}
+                            onValueChange={handlePlayer1CategoryChange}
+                            className="grid grid-cols-1 gap-3"
+                          >
+                            {Object.entries(emojiCategories).map(([category, emojis]) => (
+                              <div
+                                key={category}
+                                className="flex items-center space-x-3 bg-white/10 rounded-xl p-4 border border-white/20 hover:bg-white/20 transition-all duration-300"
+                              >
+                                <RadioGroupItem
+                                  value={category}
+                                  id={`p1-${category}`}
+                                  className="border-purple-400/50 text-purple-400"
+                                />
+                                <Label
+                                  htmlFor={`p1-${category}`}
+                                  className="flex items-center justify-between cursor-pointer w-full"
+                                >
+                                  <span className="capitalize text-white font-medium">{category}</span>
+                                  <div className="flex space-x-1">
+                                    {emojis.slice(0, 3).map((emoji, i) => (
+                                      <span key={i} className="text-xl">
+                                        {emoji}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </Label>
+                              </div>
+                            ))}
+                          </RadioGroup>
+                        </div>
+                      </div>
                     </div>
-                  ))}
-                </RadioGroup>
-              </div>
 
-              <div className="flex items-center space-x-2">
-                <Switch id="computer-opponent" checked={playWithComputer} onCheckedChange={setPlayWithComputer} />
-                <Label htmlFor="computer-opponent">Play against computer</Label>
-              </div>
+                    {/* Computer Toggle */}
+                    <div className="bg-white/10 rounded-2xl p-6 border border-white/20">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <div className="h-10 w-10 rounded-xl bg-blue-500/30 flex items-center justify-center mr-3">
+                            <Target className="h-5 w-5 text-blue-300" />
+                          </div>
+                          <div>
+                            <h3 className="text-white font-medium">AI Opponent</h3>
+                            <p className="text-white/60 text-sm">Play against our intelligent computer</p>
+                          </div>
+                        </div>
+                        <Switch
+                          id="computer-opponent"
+                          checked={playWithComputer}
+                          onCheckedChange={setPlayWithComputer}
+                          className="data-[state=checked]:bg-blue-500"
+                        />
+                      </div>
+                    </div>
 
-              {!playWithComputer && (
-                <>
-                  <div className="space-y-2">
-                    <Label htmlFor="player2">Player 2 Name</Label>
-                    <Input id="player2" value={player2Name} onChange={(e) => setPlayer2Name(e.target.value)} />
+                    {/* Player 2 Setup */}
+                    {!playWithComputer && (
+                      <div className="bg-gradient-to-r from-pink-500/20 to-pink-600/20 rounded-2xl p-6 border border-pink-400/30">
+                        <div className="flex items-center mb-4">
+                          <div className="h-10 w-10 rounded-xl bg-pink-500/30 flex items-center justify-center mr-3">
+                            <Crown className="h-5 w-5 text-pink-300" />
+                          </div>
+                          <h3 className="text-xl font-bold text-white">Player 2</h3>
+                        </div>
+
+                        <div className="space-y-4">
+                          <div>
+                            <Label htmlFor="player2" className="text-white/90 font-medium">
+                              Player Name
+                            </Label>
+                            <Input
+                              id="player2"
+                              value={player2Name}
+                              onChange={(e) => setPlayer2Name(e.target.value)}
+                              className="mt-2 bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-pink-400/50"
+                              placeholder="Enter player 2 name"
+                            />
+                          </div>
+
+                          <div>
+                            <Label className="text-white/90 font-medium mb-3 block">Choose Emoji Category</Label>
+                            <RadioGroup
+                              value={player2Category}
+                              onValueChange={setPlayer2Category}
+                              className="grid grid-cols-1 gap-3"
+                            >
+                              {Object.entries(emojiCategories).map(([category, emojis]) => (
+                                <div
+                                  key={category}
+                                  className={`flex items-center space-x-3 bg-white/10 rounded-xl p-4 border border-white/20 transition-all duration-300
+                                    ${category === player1Category ? "opacity-50 cursor-not-allowed" : "hover:bg-white/20"}`}
+                                >
+                                  <RadioGroupItem
+                                    value={category}
+                                    id={`p2-${category}`}
+                                    disabled={category === player1Category}
+                                    className="border-pink-400/50 text-pink-400"
+                                  />
+                                  <Label
+                                    htmlFor={`p2-${category}`}
+                                    className={`flex items-center justify-between w-full ${category === player1Category ? "cursor-not-allowed" : "cursor-pointer"}`}
+                                  >
+                                    <span className="capitalize text-white font-medium">{category}</span>
+                                    <div className="flex items-center space-x-2">
+                                      <div className="flex space-x-1">
+                                        {emojis.slice(0, 3).map((emoji, i) => (
+                                          <span key={i} className="text-xl">
+                                            {emoji}
+                                          </span>
+                                        ))}
+                                      </div>
+                                      {category === player1Category && (
+                                        <span className="text-xs bg-white/20 border border-white/30 rounded-full px-2 py-1 flex items-center">
+                                          <AlertCircle className="h-3 w-3 mr-1 text-amber-400" />
+                                          <span className="text-white/80">Taken</span>
+                                        </span>
+                                      )}
+                                    </div>
+                                  </Label>
+                                </div>
+                              ))}
+                            </RadioGroup>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
+                </TabsContent>
 
-                  <div className="space-y-2">
-                    <Label>Player 2 Emoji Category</Label>
-                    <RadioGroup
-                      value={player2Category}
-                      onValueChange={setPlayer2Category}
-                      className="grid grid-cols-1 gap-2"
-                    >
-                      {Object.entries(emojiCategories).map(([category, emojis]) => (
-                        <div key={category} className="flex items-center space-x-2">
+                <TabsContent value="settings" className="space-y-8 mt-8">
+                  {/* Game Duration */}
+                  <div className="bg-white/10 rounded-2xl p-6 border border-white/20">
+                    <div className="flex items-center mb-6">
+                      <div className="h-10 w-10 rounded-xl bg-blue-500/30 flex items-center justify-center mr-3">
+                        <Timer className="h-5 w-5 text-blue-300" />
+                      </div>
+                      <h3 className="text-xl font-bold text-white">Game Duration</h3>
+                    </div>
+
+                    <RadioGroup value={gameDuration} onValueChange={setGameDuration} className="grid grid-cols-1 gap-3">
+                      {gameDurations.map((duration) => (
+                        <div
+                          key={duration.value}
+                          className="flex items-center space-x-3 bg-white/10 rounded-xl p-4 border border-white/20 hover:bg-white/20 transition-all duration-300"
+                        >
                           <RadioGroupItem
-                            value={category}
-                            id={`p2-${category}`}
-                            disabled={category === player1Category}
+                            value={duration.value}
+                            id={`duration-${duration.value}`}
+                            className="border-blue-400/50 text-blue-400"
                           />
                           <Label
-                            htmlFor={`p2-${category}`}
-                            className={`flex items-center ${category === player1Category ? "opacity-70" : ""}`}
+                            htmlFor={`duration-${duration.value}`}
+                            className="flex items-center justify-between cursor-pointer w-full"
                           >
-                            <span className="capitalize mr-2">{category}</span>
-                            <span className="text-lg">{emojis.slice(0, 3).join(" ")}</span>
-                            {category === player1Category && (
-                              <span className="ml-2 text-xs bg-muted border border-border rounded-full px-2 py-0.5 flex items-center">
-                                <AlertCircle className="h-3 w-3 mr-1 text-amber-500" />
-                                <span className="text-foreground">Already chosen</span>
-                              </span>
-                            )}
+                            <div className="flex items-center">
+                              <span className="text-2xl mr-3">{duration.icon}</span>
+                              <div>
+                                <div className="font-medium text-white">{duration.label}</div>
+                                <div className="text-sm text-white/60">{duration.description}</div>
+                              </div>
+                            </div>
                           </Label>
                         </div>
                       ))}
                     </RadioGroup>
+
+                    {gameDuration === "custom" && (
+                      <div className="mt-6 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-xl p-6 border border-blue-400/30">
+                        <div className="flex justify-between items-center mb-4">
+                          <Label htmlFor="custom-time" className="text-white font-medium">
+                            Custom Duration: {customMinutes} minutes
+                          </Label>
+                        </div>
+                        <Slider
+                          id="custom-time"
+                          min={1}
+                          max={20}
+                          step={1}
+                          value={customMinutes}
+                          onValueChange={(value) => setCustomMinutes(value)}
+                          className="w-full"
+                        />
+                        <div className="flex justify-between text-sm text-white/60 mt-2">
+                          <span>1 min</span>
+                          <span>20 min</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </>
+
+                  {/* Advanced Settings */}
+                  {gameDuration !== "eternal" && (
+                    <div className="space-y-4">
+                      <div className="bg-white/10 rounded-2xl p-6 border border-white/20">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center">
+                            <div className="h-10 w-10 rounded-xl bg-green-500/30 flex items-center justify-center mr-3">
+                              <Clock className="h-5 w-5 text-green-300" />
+                            </div>
+                            <div>
+                              <h3 className="text-white font-medium">Separate Time Banks</h3>
+                              <p className="text-white/60 text-sm">
+                                {separateTimers ? "Each player has their own timer" : "Players share one timer"}
+                              </p>
+                            </div>
+                          </div>
+                          <Switch
+                            id="separate-timers"
+                            checked={separateTimers}
+                            onCheckedChange={setSeparateTimers}
+                            className="data-[state=checked]:bg-green-500"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="bg-white/10 rounded-2xl p-6 border border-white/20">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center">
+                            <div className="h-10 w-10 rounded-xl bg-yellow-500/30 flex items-center justify-center mr-3">
+                              <Zap className="h-5 w-5 text-yellow-300" />
+                            </div>
+                            <div>
+                              <h3 className="text-white font-medium">Quick Move Bonus</h3>
+                              <p className="text-white/60 text-sm">Earn +5 seconds for moves made within 10 seconds</p>
+                            </div>
+                          </div>
+                          <Switch
+                            id="quick-move-bonus"
+                            checked={enableQuickMoveBonus}
+                            onCheckedChange={setEnableQuickMoveBonus}
+                            className="data-[state=checked]:bg-yellow-500"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </TabsContent>
+              </Tabs>
+
+              {error && (
+                <div className="bg-red-500/20 border border-red-400/30 rounded-xl p-4 flex items-center">
+                  <AlertCircle className="h-5 w-5 text-red-400 mr-3 flex-shrink-0" />
+                  <span className="text-red-200">{error}</span>
+                </div>
               )}
-            </TabsContent>
-            <TabsContent value="settings" className="space-y-6 mt-4">
-              <div className="space-y-2">
-                <Label className="flex items-center">
-                  <Clock className="h-4 w-4 mr-2" />
-                  Game Duration
-                </Label>
-                <RadioGroup value={gameDuration} onValueChange={setGameDuration} className="grid grid-cols-1 gap-2">
-                  {gameDurations.map((duration) => (
-                    <div key={duration.value} className="flex items-center space-x-2">
-                      <RadioGroupItem value={duration.value} id={`duration-${duration.value}`} />
-                      <Label htmlFor={`duration-${duration.value}`} className="flex flex-col">
-                        <span className="font-medium">{duration.label}</span>
-                        <span className="text-xs text-muted-foreground">{duration.description}</span>
-                      </Label>
-                    </div>
-                  ))}
-                </RadioGroup>
+            </CardContent>
 
-                {gameDuration === "custom" && (
-                  <div className="mt-4 space-y-3">
-                    <div className="flex justify-between items-center">
-                      <Label htmlFor="custom-time">Minutes: {customMinutes}</Label>
-                    </div>
-                    <div className="px-1">
-                      <Slider
-                        id="custom-time"
-                        min={1}
-                        max={20}
-                        step={1}
-                        value={customMinutes}
-                        onValueChange={(value) => setCustomMinutes(value)}
-                      />
-                    </div>
-                    <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>1 min</span>
-                      <span>20 min</span>
-                    </div>
-                  </div>
-                )}
-
-                {gameDuration !== "eternal" && (
-                  <div className="mt-4 pt-4 border-t border-border space-y-4">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="separate-timers" className="flex items-center">
-                        <Clock className="h-4 w-4 mr-2 text-blue-500" />
-                        <div className="flex flex-col">
-                          <span className="font-medium">Separate Time Banks</span>
-                          <span className="text-xs text-muted-foreground">
-                            {separateTimers ? "Each player has their own time bank" : "Players share one time bank"}
-                          </span>
-                        </div>
-                      </Label>
-                      <Switch
-                        id="separate-timers"
-                        checked={separateTimers}
-                        onCheckedChange={(checked) => {
-                          console.log("Separate timers changed to:", checked)
-                          setSeparateTimers(checked)
-                        }}
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="quick-move-bonus" className="flex items-center">
-                        <Zap className="h-4 w-4 mr-2 text-amber-500" />
-                        <div className="flex flex-col">
-                          <span className="font-medium">Quick Move Bonus</span>
-                          <span className="text-xs text-muted-foreground">
-                            +5 seconds for moves made within 10 seconds
-                          </span>
-                        </div>
-                      </Label>
-                      <Switch
-                        id="quick-move-bonus"
-                        checked={enableQuickMoveBonus}
-                        onCheckedChange={setEnableQuickMoveBonus}
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-            </TabsContent>
-          </Tabs>
-
-          {error && (
-            <div className="text-destructive text-sm flex items-center">
-              <AlertCircle className="h-4 w-4 mr-1" />
-              {error}
-            </div>
-          )}
-        </CardContent>
-        <CardFooter>
-          <SocialButton className="w-full" variant="gradient" onClick={handleStartGame}>
-            <Gamepad2 className="mr-2 h-4 w-4" />
-            Start Game
-          </SocialButton>
-        </CardFooter>
-      </Card>
+            <CardFooter className="pt-4 pb-8">
+              <SocialButton className="w-full text-lg py-6" variant="gradient" onClick={handleStartGame}>
+                <Gamepad2 className="mr-2 h-6 w-6" />
+                Launch Game
+              </SocialButton>
+            </CardFooter>
+          </Card>
+        </div>
+      </div>
     </div>
   )
 }

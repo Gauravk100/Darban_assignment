@@ -15,7 +15,20 @@ import {
 import { Progress } from "../components/ui/progress"
 import ThemeToggle from "../components/ThemeToggle"
 import { EmojiContext } from "../contexts/EmojiContext"
-import { AlertCircle, ArrowLeft, Clock, RotateCcw, Zap } from "lucide-react"
+import {
+  AlertCircle,
+  ArrowLeft,
+  Clock,
+  RotateCcw,
+  Zap,
+  Trophy,
+  Sparkles,
+  Crown,
+  Target,
+  Timer,
+  Flame,
+  Star,
+} from "lucide-react"
 
 // Constants
 const QUICK_MOVE_TIME = 10 // seconds
@@ -480,9 +493,9 @@ export default function GameBoardPage() {
 
   function getTimerColor(time, isActive) {
     if (time === null) return ""
-    if (time < 10) return "text-red-500 dark:text-red-400 font-bold"
-    if (time < 30) return "text-amber-500 dark:text-amber-400"
-    return isActive ? "text-blue-500 dark:text-blue-400 font-medium" : ""
+    if (time < 10) return "text-red-400 font-bold animate-pulse"
+    if (time < 30) return "text-amber-400 font-medium"
+    return isActive ? "text-blue-400 font-medium" : "text-white/70"
   }
 
   function getProgressValue(time) {
@@ -495,220 +508,333 @@ export default function GameBoardPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-background">
-      <div className="absolute top-4 right-4 flex space-x-2">
-        <Dialog open={showHelp} onOpenChange={setShowHelp}>
-          <DialogTrigger asChild>
-            <SocialButton variant="outline" size="icon">
-              <AlertCircle className="h-5 w-5" />
-            </SocialButton>
-          </DialogTrigger>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>Game Rules</DialogTitle>
-              <DialogDescription>
-                <div className="space-y-2 mt-2">
-                  <p>
-                    <strong>Board:</strong> 3x3 grid with a maximum of 6 active emojis (3 per player).
-                  </p>
-                  <p>
-                    <strong>Emojis:</strong> Each player uses emojis from their chosen category.
-                  </p>
-                  <p>
-                    <strong>Turns:</strong> Players take turns placing one emoji at a time.
-                  </p>
-                  <p>
-                    <strong>Vanishing Rule:</strong> When a player tries to place a 4th emoji, their oldest emoji
-                    vanishes. The 4th emoji cannot be placed where the 1st was.
-                  </p>
-                  <p>
-                    <strong>Winning:</strong> Form a line of 3 of your emojis horizontally, vertically, or diagonally.
-                  </p>
-                  {gameSettings.gameDuration && (
-                    <>
-                      <p>
-                        <strong>Time Limit:</strong>{" "}
-                        {usingSeparateTimers
-                          ? "Each player has their own time bank of "
-                          : "Players share a time bank of "}
-                        {gameSettings.gameDuration} minutes.
-                        {usingSeparateTimers
-                          ? " If a player runs out of time, they lose."
-                          : " If time runs out, the current player loses."}
-                      </p>
-                      {gameSettings.enableQuickMoveBonus && (
-                        <p>
-                          <strong>Quick Move Bonus:</strong> Make a move within 10 seconds to earn +5 seconds of game
-                          time.
-                        </p>
-                      )}
-                    </>
-                  )}
-                </div>
-              </DialogDescription>
-            </DialogHeader>
-          </DialogContent>
-        </Dialog>
-        <ThemeToggle />
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
+      {/* Background Elements */}
+      <div className="absolute inset-0">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-pink-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
       </div>
 
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center">Emoji Tic Tac Toe</CardTitle>
+      {/* Grid Pattern */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.03)_1px,transparent_1px)] bg-[size:50px_50px]"></div>
 
-          {/* Timer display */}
-          {gameSettings.gameDuration && (
-            <>
-              {usingSeparateTimers ? (
-                // Separate timers display
-                <div className="flex justify-between items-center mt-2 mb-1">
-                  {/* Player 1 Timer */}
-                  <div
-                    className={`flex flex-col items-center ${currentPlayer === 1 ? "scale-110" : "opacity-80"} transition-all duration-300`}
-                  >
-                    <div className="flex items-center">
-                      <Clock className={`h-4 w-4 mr-1 ${currentPlayer === 1 ? "text-blue-500" : ""}`} />
-                      <span className={`text-sm font-medium ${getTimerColor(player1Time, currentPlayer === 1)}`}>
-                        {formatTime(player1Time)}
-                      </span>
-                      {showPlayer1Bonus && (
-                        <span className="ml-1 text-xs text-amber-500 dark:text-amber-400 font-bold flex items-center animate-pulse">
-                          <Zap className="h-3 w-3 mr-0.5" />+{QUICK_MOVE_BONUS}s
-                        </span>
-                      )}
-                    </div>
-                    <div className="text-xs font-medium">{gameSettings.player1.name}</div>
-                    <Progress
-                      value={getProgressValue(player1Time)}
-                      className={`h-1.5 mt-1 w-32 ${currentPlayer === 1 ? "bg-blue-100 dark:bg-blue-950" : ""}`}
-                    />
-                  </div>
-
-                  {/* Player 2 Timer */}
-                  <div
-                    className={`flex flex-col items-center ${currentPlayer === 2 ? "scale-110" : "opacity-80"} transition-all duration-300`}
-                  >
-                    <div className="flex items-center">
-                      <Clock className={`h-4 w-4 mr-1 ${currentPlayer === 2 ? "text-blue-500" : ""}`} />
-                      <span className={`text-sm font-medium ${getTimerColor(player2Time, currentPlayer === 2)}`}>
-                        {formatTime(player2Time)}
-                      </span>
-                      {showPlayer2Bonus && (
-                        <span className="ml-1 text-xs text-amber-500 dark:text-amber-400 font-bold flex items-center animate-pulse">
-                          <Zap className="h-3 w-3 mr-0.5" />+{QUICK_MOVE_BONUS}s
-                        </span>
-                      )}
-                    </div>
-                    <div className="text-xs font-medium">{gameSettings.player2.name}</div>
-                    <Progress
-                      value={getProgressValue(player2Time)}
-                      className={`h-1.5 mt-1 w-32 ${currentPlayer === 2 ? "bg-blue-100 dark:bg-blue-950" : ""}`}
-                    />
-                  </div>
-                </div>
-              ) : (
-                // Shared timer display
-                <div className="flex justify-center items-center mt-2 mb-1">
-                  <div className="flex flex-col items-center">
-                    <div className="flex items-center">
-                      <Clock className="h-4 w-4 mr-1 text-blue-500" />
-                      <span className={`text-sm font-medium ${getTimerColor(gameTime, true)}`}>
-                        {formatTime(gameTime)}
-                      </span>
-                      {(showPlayer1Bonus || showPlayer2Bonus) && (
-                        <span className="ml-1 text-xs text-amber-500 dark:text-amber-400 font-bold flex items-center animate-pulse">
-                          <Zap className="h-3 w-3 mr-0.5" />+{QUICK_MOVE_BONUS}s
-                        </span>
-                      )}
-                    </div>
-                    <div className="text-xs font-medium">Shared Time</div>
-                    <Progress
-                      value={getProgressValue(gameTime)}
-                      className="h-1.5 mt-1 w-48 bg-blue-100 dark:bg-blue-950"
-                    />
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-
-          {!winner && !timeIsUp ? (
-            <CardDescription className="text-center">
-              {currentPlayer === 1 ? gameSettings.player1.name : gameSettings.player2.name}'s turn
-              <span className="text-2xl ml-2">{currentEmoji}</span>
-              {gameSettings.enableQuickMoveBonus && gameSettings.gameDuration && !timeIsUp && (
-                <div className="mt-1 flex flex-col items-center">
-                  <div className="flex items-center text-xs">
-                    <Zap className="h-3 w-3 mr-1 text-amber-500" />
-                    <span>Quick move: {turnTimeRemaining}s</span>
-                  </div>
-                  <Progress value={getTurnProgressValue()} className="h-1 mt-1 w-24 bg-amber-100 dark:bg-amber-950" />
-                </div>
-              )}
-            </CardDescription>
-          ) : (
-            <CardDescription className="text-center text-xl font-bold">
-              {winner === 0
-                ? "It's a tie!"
-                : `${winner === 1 ? gameSettings.player1.name : gameSettings.player2.name} Wins!`}
-              {timeIsUp && <span className="text-sm block mt-1 font-normal text-muted-foreground">Time's up!</span>}
-            </CardDescription>
-          )}
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-3 gap-2 aspect-square">
-            {board.map((cell, index) => (
-              <button
-                key={index}
-                className={`rounded-md flex items-center justify-center text-4xl aspect-square transition-all ${
-                  isWinningCell(index)
-                    ? "bg-green-500/20 dark:bg-green-500/30 border-2 border-green-500"
-                    : "bg-muted hover:bg-muted/80"
-                }`}
-                onClick={() => handleCellClick(index)}
-                disabled={winner !== null || timeIsUp}
+      {/* Navigation */}
+      <nav className="relative z-50 flex items-center justify-between p-6">
+        <SocialButton
+          variant="outline"
+          size="sm"
+          onClick={() => navigate("/setup")}
+          className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Setup
+        </SocialButton>
+        <div className="flex items-center space-x-4">
+          <Dialog open={showHelp} onOpenChange={setShowHelp}>
+            <DialogTrigger asChild>
+              <SocialButton
+                variant="outline"
+                size="sm"
+                className="bg-white/10 border-white/20 text-white hover:bg-white/20"
               >
-                {cell && cell.emoji}
-              </button>
-            ))}
-          </div>
+                <AlertCircle className="h-4 w-4 mr-2" />
+                Rules
+              </SocialButton>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl bg-white/10 backdrop-blur-xl border-white/20 text-white">
+              <DialogHeader>
+                <DialogTitle className="text-2xl flex items-center text-white">
+                  <Sparkles className="h-6 w-6 mr-3 text-purple-400" />
+                  Game Rules & Strategy
+                </DialogTitle>
+                <DialogDescription className="text-white/80 text-base">
+                  Master the art of vanishing emoji warfare
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-6 mt-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {[
+                    {
+                      icon: Target,
+                      title: "Board Setup",
+                      description: "3×3 grid with maximum 6 active emojis (3 per player)",
+                    },
+                    {
+                      icon: Crown,
+                      title: "Emoji Categories",
+                      description: "Each player uses emojis from their chosen category",
+                    },
+                    {
+                      icon: Timer,
+                      title: "Turn System",
+                      description: "Players alternate placing one emoji per turn",
+                    },
+                    {
+                      icon: Flame,
+                      title: "Vanishing Rule",
+                      description: "4th emoji removes oldest. Can't place where 1st was",
+                    },
+                    {
+                      icon: Star,
+                      title: "Victory",
+                      description: "Form a line of 3 emojis horizontally, vertically, or diagonally",
+                    },
+                    {
+                      icon: Zap,
+                      title: "Quick Bonus",
+                      description: "Move within 10 seconds to earn +5 seconds",
+                    },
+                  ].map((rule, index) => (
+                    <div key={index} className="bg-white/10 rounded-xl p-4 border border-white/20">
+                      <div className="flex items-center mb-2">
+                        <div className="h-8 w-8 rounded-lg bg-purple-500/30 flex items-center justify-center mr-3">
+                          <rule.icon className="h-4 w-4 text-purple-300" />
+                        </div>
+                        <h3 className="font-semibold text-white">{rule.title}</h3>
+                      </div>
+                      <p className="text-white/70 text-sm">{rule.description}</p>
+                    </div>
+                  ))}
+                </div>
+                {gameSettings.gameDuration && (
+                  <div className="bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-xl p-4 border border-blue-400/30">
+                    <h3 className="font-semibold text-white mb-2 flex items-center">
+                      <Clock className="h-5 w-5 mr-2 text-blue-400" />
+                      Time Rules
+                    </h3>
+                    <p className="text-white/80 text-sm">
+                      {usingSeparateTimers
+                        ? `Each player has ${gameSettings.gameDuration} minutes. If time runs out, that player loses.`
+                        : `Players share ${gameSettings.gameDuration} minutes. Current player loses when time expires.`}
+                      {gameSettings.enableQuickMoveBonus && " Quick moves (≤10s) earn bonus time!"}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </DialogContent>
+          </Dialog>
+          <ThemeToggle />
+        </div>
+      </nav>
 
-          <div className="mt-4 grid grid-cols-2 gap-4">
-            <div className="text-center">
-              <p className="font-medium">{gameSettings.player1.name}</p>
-              <div className="flex justify-center space-x-1 mt-1">
-                {gameSettings.player1.emojis.slice(0, 3).map((emoji, i) => (
-                  <span key={i} className="text-lg">
-                    {emoji}
-                  </span>
+      {/* Main Game Area */}
+      <div className="relative z-10 px-6 lg:px-8 pb-24">
+        <div className="mx-auto max-w-2xl pt-8">
+          {/* Game Card */}
+          <Card className="bg-white/10 backdrop-blur-xl border-white/20 shadow-2xl">
+            <CardHeader className="pb-4">
+              <div className="flex justify-center mb-4">
+                <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-2xl">
+                  <Sparkles className="h-8 w-8 text-white" />
+                </div>
+              </div>
+              <CardTitle className="text-3xl font-bold text-center text-white">Emoji Battle Arena</CardTitle>
+
+              {/* Timer Display */}
+              {gameSettings.gameDuration && (
+                <div className="mt-6">
+                  {usingSeparateTimers ? (
+                    // Separate timers display
+                    <div className="grid grid-cols-2 gap-6">
+                      {/* Player 1 Timer */}
+                      <div
+                        className={`bg-gradient-to-r from-purple-500/20 to-purple-600/20 rounded-xl p-4 border border-purple-400/30 transition-all duration-300 ${currentPlayer === 1 ? "scale-105 shadow-lg shadow-purple-500/25" : "opacity-70"}`}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center">
+                            <Crown className="h-5 w-5 text-purple-300 mr-2" />
+                            <span className="font-medium text-white">{gameSettings.player1.name}</span>
+                          </div>
+                          {showPlayer1Bonus && (
+                            <div className="flex items-center text-amber-400 animate-pulse">
+                              <Zap className="h-4 w-4 mr-1" />
+                              <span className="text-sm font-bold">+{QUICK_MOVE_BONUS}s</span>
+                            </div>
+                          )}
+                        </div>
+                        <div className={`text-2xl font-bold ${getTimerColor(player1Time, currentPlayer === 1)}`}>
+                          {formatTime(player1Time)}
+                        </div>
+                        <Progress value={getProgressValue(player1Time)} className="h-2 mt-2 bg-white/20" />
+                      </div>
+
+                      {/* Player 2 Timer */}
+                      <div
+                        className={`bg-gradient-to-r from-pink-500/20 to-pink-600/20 rounded-xl p-4 border border-pink-400/30 transition-all duration-300 ${currentPlayer === 2 ? "scale-105 shadow-lg shadow-pink-500/25" : "opacity-70"}`}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center">
+                            <Crown className="h-5 w-5 text-pink-300 mr-2" />
+                            <span className="font-medium text-white">{gameSettings.player2.name}</span>
+                          </div>
+                          {showPlayer2Bonus && (
+                            <div className="flex items-center text-amber-400 animate-pulse">
+                              <Zap className="h-4 w-4 mr-1" />
+                              <span className="text-sm font-bold">+{QUICK_MOVE_BONUS}s</span>
+                            </div>
+                          )}
+                        </div>
+                        <div className={`text-2xl font-bold ${getTimerColor(player2Time, currentPlayer === 2)}`}>
+                          {formatTime(player2Time)}
+                        </div>
+                        <Progress value={getProgressValue(player2Time)} className="h-2 mt-2 bg-white/20" />
+                      </div>
+                    </div>
+                  ) : (
+                    // Shared timer display
+                    <div className="bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-xl p-6 border border-blue-400/30">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center">
+                          <Clock className="h-6 w-6 text-blue-300 mr-3" />
+                          <span className="text-xl font-medium text-white">Shared Time</span>
+                        </div>
+                        {(showPlayer1Bonus || showPlayer2Bonus) && (
+                          <div className="flex items-center text-amber-400 animate-pulse">
+                            <Zap className="h-5 w-5 mr-2" />
+                            <span className="font-bold">+{QUICK_MOVE_BONUS}s Bonus!</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className={`text-3xl font-bold ${getTimerColor(gameTime, true)}`}>
+                        {formatTime(gameTime)}
+                      </div>
+                      <Progress value={getProgressValue(gameTime)} className="h-3 mt-3 bg-white/20" />
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Current Player Display */}
+              {!winner && !timeIsUp ? (
+                <CardDescription className="text-center mt-6">
+                  <div className="bg-white/10 rounded-xl p-4 border border-white/20">
+                    <div className="flex items-center justify-center mb-2">
+                      <div
+                        className={`h-10 w-10 rounded-xl ${currentPlayer === 1 ? "bg-purple-500/30" : "bg-pink-500/30"} flex items-center justify-center mr-3`}
+                      >
+                        <Crown className={`h-5 w-5 ${currentPlayer === 1 ? "text-purple-300" : "text-pink-300"}`} />
+                      </div>
+                      <span className="text-xl font-bold text-white">
+                        {currentPlayer === 1 ? gameSettings.player1.name : gameSettings.player2.name}'s Turn
+                      </span>
+                      <span className="text-4xl ml-3 animate-bounce">{currentEmoji}</span>
+                    </div>
+
+                    {gameSettings.enableQuickMoveBonus && gameSettings.gameDuration && !timeIsUp && (
+                      <div className="mt-3">
+                        <div className="flex items-center justify-center text-sm text-white/80 mb-2">
+                          <Zap className="h-4 w-4 mr-1 text-amber-400" />
+                          <span>Quick move bonus: {turnTimeRemaining}s remaining</span>
+                        </div>
+                        <Progress value={getTurnProgressValue()} className="h-2 bg-white/20" />
+                      </div>
+                    )}
+                  </div>
+                </CardDescription>
+              ) : (
+                <CardDescription className="text-center mt-6">
+                  <div className="bg-gradient-to-r from-amber-500/20 to-yellow-500/20 rounded-xl p-6 border border-amber-400/30">
+                    {winner === 0 ? (
+                      <div className="text-2xl font-bold text-white">🤝 It's a Tie!</div>
+                    ) : (
+                      <div className="flex flex-col items-center">
+                        <div className="flex items-center mb-3">
+                          <Trophy className="h-8 w-8 text-amber-400 mr-3" />
+                          <span className="text-3xl font-bold text-white">
+                            {winner === 1 ? gameSettings.player1.name : gameSettings.player2.name} Wins!
+                          </span>
+                        </div>
+                        {timeIsUp && (
+                          <div className="bg-white/20 rounded-full px-4 py-2 text-white/90">⏰ Time's up!</div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </CardDescription>
+              )}
+            </CardHeader>
+
+            <CardContent className="px-8">
+              {/* Game Board */}
+              <div className="grid grid-cols-3 gap-4 aspect-square mb-8">
+                {board.map((cell, index) => (
+                  <button
+                    key={index}
+                    className={`aspect-square flex items-center justify-center text-5xl rounded-2xl transition-all duration-300 transform hover:scale-105 active:scale-95
+                      ${
+                        isWinningCell(index)
+                          ? "bg-gradient-to-br from-green-400/30 to-emerald-500/30 border-2 border-green-400 shadow-lg shadow-green-400/25 animate-pulse"
+                          : "bg-white/10 hover:bg-white/20 border border-white/20"
+                      }`}
+                    onClick={() => handleCellClick(index)}
+                    disabled={winner !== null || timeIsUp}
+                  >
+                    {cell && <span className={isWinningCell(index) ? "animate-bounce" : ""}>{cell.emoji}</span>}
+                  </button>
                 ))}
               </div>
-            </div>
-            <div className="text-center">
-              <p className="font-medium">{gameSettings.player2.name}</p>
-              <div className="flex justify-center space-x-1 mt-1">
-                {gameSettings.player2.emojis.slice(0, 3).map((emoji, i) => (
-                  <span key={i} className="text-lg">
-                    {emoji}
-                  </span>
-                ))}
+
+              {/* Player Categories Display */}
+              <div className="grid grid-cols-2 gap-6">
+                <div className="bg-gradient-to-r from-purple-500/20 to-purple-600/20 rounded-xl p-4 border border-purple-400/30">
+                  <div className="flex items-center mb-3">
+                    <div className="h-8 w-8 rounded-lg bg-purple-500/30 flex items-center justify-center mr-3">
+                      <Crown className="h-4 w-4 text-purple-300" />
+                    </div>
+                    <span className="font-bold text-white">{gameSettings.player1.name}</span>
+                  </div>
+                  <div className="flex justify-center space-x-2">
+                    {gameSettings.player1.emojis.slice(0, 4).map((emoji, i) => (
+                      <span key={i} className="text-2xl">
+                        {emoji}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="text-center text-white/60 text-sm mt-2 capitalize">
+                    {gameSettings.player1.category}
+                  </div>
+                </div>
+
+                <div className="bg-gradient-to-r from-pink-500/20 to-pink-600/20 rounded-xl p-4 border border-pink-400/30">
+                  <div className="flex items-center mb-3">
+                    <div className="h-8 w-8 rounded-lg bg-pink-500/30 flex items-center justify-center mr-3">
+                      <Crown className="h-4 w-4 text-pink-300" />
+                    </div>
+                    <span className="font-bold text-white">{gameSettings.player2.name}</span>
+                  </div>
+                  <div className="flex justify-center space-x-2">
+                    {gameSettings.player2.emojis.slice(0, 4).map((emoji, i) => (
+                      <span key={i} className="text-2xl">
+                        {emoji}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="text-center text-white/60 text-sm mt-2 capitalize">
+                    {gameSettings.player2.category}
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        </CardContent>
-        <CardFooter className="flex justify-between">
-          <SocialButton variant="github" onClick={() => navigate("/setup")}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            New Game
-          </SocialButton>
-          {(winner !== null || timeIsUp) && (
-            <SocialButton variant="gradient" onClick={resetGame}>
-              <RotateCcw className="mr-2 h-4 w-4" />
-              Play Again
-            </SocialButton>
-          )}
-        </CardFooter>
-      </Card>
+            </CardContent>
+
+            <CardFooter className="flex justify-between pt-4 pb-8 px-8">
+              <SocialButton
+                variant="outline"
+                onClick={() => navigate("/setup")}
+                className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                New Game
+              </SocialButton>
+              {(winner !== null || timeIsUp) && (
+                <SocialButton variant="gradient" onClick={resetGame}>
+                  <RotateCcw className="mr-2 h-4 w-4" />
+                  Play Again
+                </SocialButton>
+              )}
+            </CardFooter>
+          </Card>
+        </div>
+      </div>
     </div>
   )
 }
