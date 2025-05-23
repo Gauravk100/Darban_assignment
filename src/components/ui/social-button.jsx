@@ -3,7 +3,10 @@ import { cn } from "../../lib/utils"
 import { Slot } from "@radix-ui/react-slot"
 
 const SocialButton = React.forwardRef(
-  ({ className, variant = "default", size = "default", asChild = false, children, ...props }, ref) => {
+  (
+    { className, variant = "default", size = "default", asChild = false, children, ...props },
+    ref
+  ) => {
     const Comp = asChild ? Slot : "button"
     return (
       <Comp
@@ -32,35 +35,41 @@ const SocialButton = React.forwardRef(
             "h-11 rounded-md px-8": size === "lg",
             "h-9 w-9": size === "icon",
           },
-          className,
+          className
         )}
         ref={ref}
         {...props}
       >
         <span className="relative z-10 flex items-center justify-center">{children}</span>
+
+        {/* Curved Flip Overlay (Half-covered, Faster) */}
         <span
-          className={cn("absolute left-0 right-0 bottom-0 h-0 transition-all duration-300 group-hover:h-full z-0", {
-            "bg-gray-100 dark:bg-slate-700": variant === "outline",
-            "bg-primary/90": variant === "default",
-            "bg-destructive/90": variant === "destructive",
-            "bg-secondary/80": variant === "secondary",
-            "bg-transparent": variant === "link",
-            "bg-[#4285F4]/90 dark:bg-[#3367D6]/90": variant === "google",
-            "bg-[#24292F]/90 dark:bg-[#1a1e22]/90": variant === "github",
-            "bg-[#1877F2]/90 dark:bg-[#166FE5]/90": variant === "facebook",
-            "bg-[#1DA1F2]/90 dark:bg-[#1A91DA]/90": variant === "twitter",
-            "bg-[#0A66C2]/90 dark:bg-[#0958A5]/90": variant === "linkedin",
-            "bg-[#25D366]/90 dark:bg-[#22C55E]/90": variant === "whatsapp",
-            "bg-[#EA4335]/90 dark:bg-[#DC2626]/90": variant === "youtube",
-            "bg-[#FF4500]/90 dark:bg-[#EA580C]/90": variant === "reddit",
-            "bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-500 dark:to-pink-500":
-              variant === "gradient",
-          })}
+          className={cn(
+            "absolute inset-0 z-0 pointer-events-none before:content-[''] before:absolute before:bottom-0 before:right-0 before:w-full before:h-full before:bg-inherit before:origin-bottom-right before:rotate-[100deg] before:rounded-bl-[100%] before:transition-transform before:duration-500 before:ease-in-out group-hover:before:rotate-[0deg]",
+            {
+              "before:bg-gray-100 dark:before:bg-slate-700": variant === "outline",
+              "before:bg-primary/90": variant === "default",
+              "before:bg-destructive/90": variant === "destructive",
+              "before:bg-secondary/80": variant === "secondary",
+              "before:bg-transparent": variant === "link",
+              "before:bg-[#4285F4]/90 dark:before:bg-[#3367D6]/90": variant === "google",
+              "before:bg-[#24292F]/90 dark:before:bg-[#1a1e22]/90": variant === "github",
+              "before:bg-[#1877F2]/90 dark:before:bg-[#166FE5]/90": variant === "facebook",
+              "before:bg-[#1DA1F2]/90 dark:before:bg-[#1A91DA]/90": variant === "twitter",
+              "before:bg-[#0A66C2]/90 dark:before:bg-[#0958A5]/90": variant === "linkedin",
+              "before:bg-[#25D366]/90 dark:before:bg-[#22C55E]/90": variant === "whatsapp",
+              "before:bg-[#EA4335]/90 dark:before:bg-[#DC2626]/90": variant === "youtube",
+              "before:bg-[#FF4500]/90 dark:before:bg-[#EA580C]/90": variant === "reddit",
+              "before:bg-gradient-to-r before:from-purple-600 before:to-pink-600 dark:before:from-purple-500 dark:before:to-pink-500":
+                variant === "gradient",
+            }
+          )}
         />
       </Comp>
     )
-  },
+  }
 )
+
 SocialButton.displayName = "SocialButton"
 
 export { SocialButton }
