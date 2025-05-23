@@ -54,8 +54,7 @@ A twisted version of the classic Tic Tac Toe game using emojis and introducing a
 
 1. Clone the repository
 \`\`\`bash
-git clone https://github.com/yourusername/Darban_assignment
-.git
+git clone https://github.com/yourusername/Darban_assignment.git
 cd emoji-tic-tac-toe
 \`\`\`
 
