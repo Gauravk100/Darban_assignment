@@ -23,6 +23,10 @@ A twisted version of the classic Tic Tac Toe game using emojis and introducing a
 - The 4th emoji cannot be placed over where the 1st emoji was placed
 - The emoji disappears visually, and that cell becomes empty or reusable
 
+### Time Control
+- Players can select a custom time bracket—either a shared time limit or separate ones for each player.
+- Quick Move Bonus: Make your move within 10 seconds and earn an extra +5 seconds as a reward!
+
 ### Winning Condition
 - A player wins by forming a line of 3 of their own emojis:
   - Horizontally, vertically, or diagonally
@@ -33,11 +37,11 @@ A twisted version of the classic Tic Tac Toe game using emojis and introducing a
 - Dark/light theme toggle
 - Responsive design for both desktop and mobile
 - Help section for first-time players
+- Time control in Tic-Tac-Toe game 
 
 ## Technologies Used
 - React.js
 - Vite
-- shadcn/ui components
 - Tailwind CSS
 
 ## Getting Started
