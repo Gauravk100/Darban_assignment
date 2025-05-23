@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom"
-import { Button } from "../components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../components/ui/card"
 import ThemeToggle from "../components/ThemeToggle"
+import { SocialButton } from "../components/ui/social-button"
+import { Gamepad2 } from "lucide-react"
 
 export default function HomePage() {
   return (
@@ -26,7 +27,10 @@ export default function HomePage() {
         </CardContent>
         <CardFooter className="flex flex-col space-y-2">
           <Link to="/setup" className="w-full">
-            <Button className="w-full">Start Game</Button>
+            <SocialButton className="w-full" variant="gradient">
+              <Gamepad2 className="mr-2 h-4 w-4" />
+              Start Game
+            </SocialButton>
           </Link>
         </CardFooter>
       </Card>

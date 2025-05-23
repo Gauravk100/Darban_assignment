@@ -1,16 +1,20 @@
 "use client"
 
 import { useTheme } from "../components/theme-provider"
-import { Button } from "../components/ui/button"
-import { Moon, Sun } from "lucide-react"
+import { Toggle, GooeyFilter } from "../components/ui/toggle"
 
 export default function ThemeToggle() {
   const { theme, setTheme } = useTheme()
 
+  const handleThemeChange = (checked) => {
+    setTheme(checked ? "dark" : "light")
+  }
+
   return (
-    <Button variant="outline" size="icon" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
-      {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+    <div className="relative">
+      <GooeyFilter />
+      <Toggle checked={theme === "dark"} onCheckedChange={handleThemeChange} variant="warning" showIcons={true} />
       <span className="sr-only">Toggle theme</span>
-    </Button>
+    </div>
   )
 }

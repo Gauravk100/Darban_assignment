@@ -2,7 +2,7 @@
 
 import { useState, useContext, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import { Button } from "../components/ui/button"
+import { SocialButton } from "../components/ui/social-button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../components/ui/card"
 import { Input } from "../components/ui/input"
 import { Label } from "../components/ui/label"
@@ -12,7 +12,7 @@ import { Switch } from "../components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs"
 import ThemeToggle from "../components/ThemeToggle"
 import { EmojiContext } from "../contexts/EmojiContext"
-import { AlertCircle, Clock, Zap } from "lucide-react"
+import { AlertCircle, Clock, Gamepad2, Zap } from "lucide-react"
 
 const emojiCategories = {
   animals: ["🐶", "🐱", "🐵", "🐰", "🦊", "🐼", "🐨", "🦁", "🐯"],
@@ -42,7 +42,7 @@ export default function GameSetupPage() {
   const [gameDuration, setGameDuration] = useState("eternal")
   const [customMinutes, setCustomMinutes] = useState(5)
   const [enableQuickMoveBonus, setEnableQuickMoveBonus] = useState(true)
-  const [separateTimers, setSeparateTimers] = useState(true)
+  const [separateTimers, setSeparateTimers] = useState(false) // Changed default to false
   const [error, setError] = useState("")
 
   // Update player2Category if it's the same as player1Category
@@ -90,6 +90,7 @@ export default function GameSetupPage() {
 
     // Log for debugging
     console.log("Starting game with settings:", settings)
+    console.log("Separate timers setting:", separateTimers)
 
     // Set the game settings in context
     setGameSettings(settings)
@@ -246,10 +247,19 @@ export default function GameSetupPage() {
                         <Clock className="h-4 w-4 mr-2 text-blue-500" />
                         <div className="flex flex-col">
                           <span className="font-medium">Separate Time Banks</span>
-                          <span className="text-xs text-muted-foreground">Each player has their own time bank</span>
+                          <span className="text-xs text-muted-foreground">
+                            {separateTimers ? "Each player has their own time bank" : "Players share one time bank"}
+                          </span>
                         </div>
                       </Label>
-                      <Switch id="separate-timers" checked={separateTimers} onCheckedChange={setSeparateTimers} />
+                      <Switch
+                        id="separate-timers"
+                        checked={separateTimers}
+                        onCheckedChange={(checked) => {
+                          console.log("Separate timers changed to:", checked)
+                          setSeparateTimers(checked)
+                        }}
+                      />
                     </div>
 
                     <div className="flex items-center justify-between">
@@ -282,9 +292,10 @@ export default function GameSetupPage() {
           )}
         </CardContent>
         <CardFooter>
-          <Button className="w-full" onClick={handleStartGame}>
+          <SocialButton className="w-full" variant="gradient" onClick={handleStartGame}>
+            <Gamepad2 className="mr-2 h-4 w-4" />
             Start Game
-          </Button>
+          </SocialButton>
         </CardFooter>
       </Card>
     </div>

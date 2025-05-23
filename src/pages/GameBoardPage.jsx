@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useContext, useRef } from "react"
 import { useNavigate } from "react-router-dom"
-import { Button } from "../components/ui/button"
+import { SocialButton } from "../components/ui/social-button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../components/ui/card"
 import {
   Dialog,
@@ -15,7 +15,7 @@ import {
 import { Progress } from "../components/ui/progress"
 import ThemeToggle from "../components/ThemeToggle"
 import { EmojiContext } from "../contexts/EmojiContext"
-import { AlertCircle, Clock, Zap } from "lucide-react"
+import { AlertCircle, ArrowLeft, Clock, RotateCcw, Zap } from "lucide-react"
 
 // Constants
 const QUICK_MOVE_TIME = 10 // seconds
@@ -35,11 +35,15 @@ export default function GameBoardPage() {
   const [showHelp, setShowHelp] = useState(false)
 
   // Timer related state
+  const [gameTime, setGameTime] = useState(null) // Combined timer for non-separate mode
   const [player1Time, setPlayer1Time] = useState(null)
   const [player2Time, setPlayer2Time] = useState(null)
   const [isTimerRunning, setIsTimerRunning] = useState(false)
   const [timeIsUp, setTimeIsUp] = useState(false)
   const timerRef = useRef(null)
+
+  // Track whether we're using separate timers
+  const [usingSeparateTimers, setUsingSeparateTimers] = useState(false)
 
   // Turn timer for quick move bonus
   const [turnTimeRemaining, setTurnTimeRemaining] = useState(QUICK_MOVE_TIME)
@@ -49,7 +53,6 @@ export default function GameBoardPage() {
   const turnStartTimeRef = useRef(null)
 
   useEffect(() => {
-    // Debug log
     console.log("GameBoardPage mounted, gameSettings:", gameSettings)
 
     if (!gameSettings) {
@@ -64,9 +67,30 @@ export default function GameBoardPage() {
 
     // Initialize timers if game has a duration
     if (gameSettings.gameDuration) {
-      console.log("Setting up timers with duration:", gameSettings.gameDuration)
-      setPlayer1Time(gameSettings.player1.timeRemaining)
-      setPlayer2Time(gameSettings.player2.timeRemaining)
+      console.log(
+        "Setting up timers with duration:",
+        gameSettings.gameDuration,
+        "separateTimers:",
+        gameSettings.separateTimers,
+      )
+
+      // Store the timer mode for reference
+      setUsingSeparateTimers(gameSettings.separateTimers)
+
+      if (gameSettings.separateTimers) {
+        // Separate timers for each player
+        setPlayer1Time(gameSettings.player1.timeRemaining)
+        setPlayer2Time(gameSettings.player2.timeRemaining)
+        setGameTime(null) // Not using combined timer
+        console.log("Using separate timers:", gameSettings.player1.timeRemaining, gameSettings.player2.timeRemaining)
+      } else {
+        // Single shared timer
+        setGameTime(gameSettings.gameDuration * 60)
+        setPlayer1Time(null) // Not using separate timers
+        setPlayer2Time(null) // Not using separate timers
+        console.log("Using shared timer:", gameSettings.gameDuration * 60)
+      }
+
       setIsTimerRunning(true)
     }
 
@@ -81,27 +105,46 @@ export default function GameBoardPage() {
 
   // Main game timer effect
   useEffect(() => {
-    if (!isTimerRunning || (player1Time === null && player2Time === null)) return
+    if (!isTimerRunning || !gameSettings?.gameDuration) return
+
+    console.log("Timer running, mode:", usingSeparateTimers ? "separate" : "shared")
 
     timerRef.current = setInterval(() => {
-      if (currentPlayer === 1) {
-        setPlayer1Time((prev) => {
-          if (prev <= 1) {
-            clearInterval(timerRef.current)
-            setIsTimerRunning(false)
-            setTimeIsUp(true)
-            setWinner(2) // Player 2 wins if Player 1 runs out of time
-            return 0
-          }
-          return prev - 1
-        })
+      if (usingSeparateTimers) {
+        // Separate timers mode
+        if (currentPlayer === 1) {
+          setPlayer1Time((prev) => {
+            if (prev <= 1) {
+              clearInterval(timerRef.current)
+              setIsTimerRunning(false)
+              setTimeIsUp(true)
+              setWinner(2) // Player 2 wins if Player 1 runs out of time
+              return 0
+            }
+            return prev - 1
+          })
+        } else {
+          setPlayer2Time((prev) => {
+            if (prev <= 1) {
+              clearInterval(timerRef.current)
+              setIsTimerRunning(false)
+              setTimeIsUp(true)
+              setWinner(1) // Player 1 wins if Player 2 runs out of time
+              return 0
+            }
+            return prev - 1
+          })
+        }
       } else {
-        setPlayer2Time((prev) => {
+        // Shared timer mode
+        setGameTime((prev) => {
+          if (!prev) return null
           if (prev <= 1) {
             clearInterval(timerRef.current)
             setIsTimerRunning(false)
             setTimeIsUp(true)
-            setWinner(1) // Player 1 wins if Player 2 runs out of time
+            // In shared timer mode, the current player loses when time runs out
+            setWinner(currentPlayer === 1 ? 2 : 1)
             return 0
           }
           return prev - 1
@@ -112,7 +155,7 @@ export default function GameBoardPage() {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current)
     }
-  }, [isTimerRunning, currentPlayer, player1Time, player2Time])
+  }, [isTimerRunning, currentPlayer, usingSeparateTimers, gameSettings?.gameDuration])
 
   // Turn timer effect for quick move bonus
   useEffect(() => {
@@ -195,12 +238,23 @@ export default function GameBoardPage() {
 
     // Add bonus time if earned
     if (earnedBonus && gameSettings.enableQuickMoveBonus) {
-      if (currentPlayer === 1 && player1Time !== null) {
-        setPlayer1Time((prev) => prev + QUICK_MOVE_BONUS)
-        setShowPlayer1Bonus(true)
-      } else if (currentPlayer === 2 && player2Time !== null) {
-        setPlayer2Time((prev) => prev + QUICK_MOVE_BONUS)
-        setShowPlayer2Bonus(true)
+      if (usingSeparateTimers) {
+        // Add bonus to the current player's timer
+        if (currentPlayer === 1 && player1Time !== null) {
+          setPlayer1Time((prev) => prev + QUICK_MOVE_BONUS)
+          setShowPlayer1Bonus(true)
+        } else if (currentPlayer === 2 && player2Time !== null) {
+          setPlayer2Time((prev) => prev + QUICK_MOVE_BONUS)
+          setShowPlayer2Bonus(true)
+        }
+      } else {
+        // Add bonus to the shared timer
+        setGameTime((prev) => prev + QUICK_MOVE_BONUS)
+        if (currentPlayer === 1) {
+          setShowPlayer1Bonus(true)
+        } else {
+          setShowPlayer2Bonus(true)
+        }
       }
     }
 
@@ -395,8 +449,15 @@ export default function GameBoardPage() {
 
     // Reset timers if game has a duration
     if (gameSettings.gameDuration) {
-      setPlayer1Time(gameSettings.gameDuration * 60)
-      setPlayer2Time(gameSettings.gameDuration * 60)
+      if (usingSeparateTimers) {
+        setPlayer1Time(gameSettings.gameDuration * 60)
+        setPlayer2Time(gameSettings.gameDuration * 60)
+        setGameTime(null)
+      } else {
+        setGameTime(gameSettings.gameDuration * 60)
+        setPlayer1Time(null)
+        setPlayer2Time(null)
+      }
       setIsTimerRunning(true)
 
       // Reset turn timer
@@ -438,9 +499,9 @@ export default function GameBoardPage() {
       <div className="absolute top-4 right-4 flex space-x-2">
         <Dialog open={showHelp} onOpenChange={setShowHelp}>
           <DialogTrigger asChild>
-            <Button variant="outline" size="icon">
+            <SocialButton variant="outline" size="icon">
               <AlertCircle className="h-5 w-5" />
-            </Button>
+            </SocialButton>
           </DialogTrigger>
           <DialogContent className="max-w-md">
             <DialogHeader>
@@ -466,8 +527,14 @@ export default function GameBoardPage() {
                   {gameSettings.gameDuration && (
                     <>
                       <p>
-                        <strong>Time Limit:</strong> Each player has {gameSettings.gameDuration} minutes. If a player
-                        runs out of time, they lose.
+                        <strong>Time Limit:</strong>{" "}
+                        {usingSeparateTimers
+                          ? "Each player has their own time bank of "
+                          : "Players share a time bank of "}
+                        {gameSettings.gameDuration} minutes.
+                        {usingSeparateTimers
+                          ? " If a player runs out of time, they lose."
+                          : " If time runs out, the current player loses."}
                       </p>
                       {gameSettings.enableQuickMoveBonus && (
                         <p>
@@ -490,59 +557,86 @@ export default function GameBoardPage() {
           <CardTitle className="text-2xl font-bold text-center">Emoji Tic Tac Toe</CardTitle>
 
           {/* Timer display */}
-          {(player1Time !== null || player2Time !== null) && (
-            <div className="flex justify-between items-center mt-2 mb-1">
-              {/* Player 1 Timer */}
-              <div
-                className={`flex flex-col items-center ${currentPlayer === 1 ? "scale-110" : "opacity-80"} transition-all duration-300`}
-              >
-                <div className="flex items-center">
-                  <Clock className={`h-4 w-4 mr-1 ${currentPlayer === 1 ? "text-blue-500" : ""}`} />
-                  <span className={`text-sm font-medium ${getTimerColor(player1Time, currentPlayer === 1)}`}>
-                    {formatTime(player1Time)}
-                  </span>
-                  {showPlayer1Bonus && (
-                    <span className="ml-1 text-xs text-amber-500 dark:text-amber-400 font-bold flex items-center animate-pulse">
-                      <Zap className="h-3 w-3 mr-0.5" />+{QUICK_MOVE_BONUS}s
-                    </span>
-                  )}
-                </div>
-                <div className="text-xs font-medium">{gameSettings.player1.name}</div>
-                <Progress
-                  value={getProgressValue(player1Time)}
-                  className={`h-1.5 mt-1 w-32 ${currentPlayer === 1 ? "bg-blue-100 dark:bg-blue-950" : ""}`}
-                />
-              </div>
+          {gameSettings.gameDuration && (
+            <>
+              {usingSeparateTimers ? (
+                // Separate timers display
+                <div className="flex justify-between items-center mt-2 mb-1">
+                  {/* Player 1 Timer */}
+                  <div
+                    className={`flex flex-col items-center ${currentPlayer === 1 ? "scale-110" : "opacity-80"} transition-all duration-300`}
+                  >
+                    <div className="flex items-center">
+                      <Clock className={`h-4 w-4 mr-1 ${currentPlayer === 1 ? "text-blue-500" : ""}`} />
+                      <span className={`text-sm font-medium ${getTimerColor(player1Time, currentPlayer === 1)}`}>
+                        {formatTime(player1Time)}
+                      </span>
+                      {showPlayer1Bonus && (
+                        <span className="ml-1 text-xs text-amber-500 dark:text-amber-400 font-bold flex items-center animate-pulse">
+                          <Zap className="h-3 w-3 mr-0.5" />+{QUICK_MOVE_BONUS}s
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-xs font-medium">{gameSettings.player1.name}</div>
+                    <Progress
+                      value={getProgressValue(player1Time)}
+                      className={`h-1.5 mt-1 w-32 ${currentPlayer === 1 ? "bg-blue-100 dark:bg-blue-950" : ""}`}
+                    />
+                  </div>
 
-              {/* Player 2 Timer */}
-              <div
-                className={`flex flex-col items-center ${currentPlayer === 2 ? "scale-110" : "opacity-80"} transition-all duration-300`}
-              >
-                <div className="flex items-center">
-                  <Clock className={`h-4 w-4 mr-1 ${currentPlayer === 2 ? "text-blue-500" : ""}`} />
-                  <span className={`text-sm font-medium ${getTimerColor(player2Time, currentPlayer === 2)}`}>
-                    {formatTime(player2Time)}
-                  </span>
-                  {showPlayer2Bonus && (
-                    <span className="ml-1 text-xs text-amber-500 dark:text-amber-400 font-bold flex items-center animate-pulse">
-                      <Zap className="h-3 w-3 mr-0.5" />+{QUICK_MOVE_BONUS}s
-                    </span>
-                  )}
+                  {/* Player 2 Timer */}
+                  <div
+                    className={`flex flex-col items-center ${currentPlayer === 2 ? "scale-110" : "opacity-80"} transition-all duration-300`}
+                  >
+                    <div className="flex items-center">
+                      <Clock className={`h-4 w-4 mr-1 ${currentPlayer === 2 ? "text-blue-500" : ""}`} />
+                      <span className={`text-sm font-medium ${getTimerColor(player2Time, currentPlayer === 2)}`}>
+                        {formatTime(player2Time)}
+                      </span>
+                      {showPlayer2Bonus && (
+                        <span className="ml-1 text-xs text-amber-500 dark:text-amber-400 font-bold flex items-center animate-pulse">
+                          <Zap className="h-3 w-3 mr-0.5" />+{QUICK_MOVE_BONUS}s
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-xs font-medium">{gameSettings.player2.name}</div>
+                    <Progress
+                      value={getProgressValue(player2Time)}
+                      className={`h-1.5 mt-1 w-32 ${currentPlayer === 2 ? "bg-blue-100 dark:bg-blue-950" : ""}`}
+                    />
+                  </div>
                 </div>
-                <div className="text-xs font-medium">{gameSettings.player2.name}</div>
-                <Progress
-                  value={getProgressValue(player2Time)}
-                  className={`h-1.5 mt-1 w-32 ${currentPlayer === 2 ? "bg-blue-100 dark:bg-blue-950" : ""}`}
-                />
-              </div>
-            </div>
+              ) : (
+                // Shared timer display
+                <div className="flex justify-center items-center mt-2 mb-1">
+                  <div className="flex flex-col items-center">
+                    <div className="flex items-center">
+                      <Clock className="h-4 w-4 mr-1 text-blue-500" />
+                      <span className={`text-sm font-medium ${getTimerColor(gameTime, true)}`}>
+                        {formatTime(gameTime)}
+                      </span>
+                      {(showPlayer1Bonus || showPlayer2Bonus) && (
+                        <span className="ml-1 text-xs text-amber-500 dark:text-amber-400 font-bold flex items-center animate-pulse">
+                          <Zap className="h-3 w-3 mr-0.5" />+{QUICK_MOVE_BONUS}s
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-xs font-medium">Shared Time</div>
+                    <Progress
+                      value={getProgressValue(gameTime)}
+                      className="h-1.5 mt-1 w-48 bg-blue-100 dark:bg-blue-950"
+                    />
+                  </div>
+                </div>
+              )}
+            </>
           )}
 
           {!winner && !timeIsUp ? (
             <CardDescription className="text-center">
               {currentPlayer === 1 ? gameSettings.player1.name : gameSettings.player2.name}'s turn
               <span className="text-2xl ml-2">{currentEmoji}</span>
-              {gameSettings.enableQuickMoveBonus && (player1Time !== null || player2Time !== null) && !timeIsUp && (
+              {gameSettings.enableQuickMoveBonus && gameSettings.gameDuration && !timeIsUp && (
                 <div className="mt-1 flex flex-col items-center">
                   <div className="flex items-center text-xs">
                     <Zap className="h-3 w-3 mr-1 text-amber-500" />
@@ -603,10 +697,16 @@ export default function GameBoardPage() {
           </div>
         </CardContent>
         <CardFooter className="flex justify-between">
-          <Button variant="outline" onClick={() => navigate("/setup")}>
+          <SocialButton variant="github" onClick={() => navigate("/setup")}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
             New Game
-          </Button>
-          {(winner !== null || timeIsUp) && <Button onClick={resetGame}>Play Again</Button>}
+          </SocialButton>
+          {(winner !== null || timeIsUp) && (
+            <SocialButton variant="gradient" onClick={resetGame}>
+              <RotateCcw className="mr-2 h-4 w-4" />
+              Play Again
+            </SocialButton>
+          )}
         </CardFooter>
       </Card>
     </div>
